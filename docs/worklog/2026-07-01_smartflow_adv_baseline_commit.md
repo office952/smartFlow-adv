@@ -57,13 +57,27 @@ Demo DB `workos_v6.demo.local.db` and fresh `workos_v6.db` remain local only.
 
 ## Commit hash
 
-_(filled after commit)_
+`838530f089bda5019df5d0788e4159e8038c2f57`
+
+Message: `Initialize smartflow-adv starter baseline`
+
+40 files, 5856 insertions.
 
 ---
 
 ## Push status
 
-_(filled after push attempt)_
+**SUCCESS** — `main` pushed to `origin`, tracking set.
+
+```
+git push -u origin main
+```
+
+Remote note: GitHub reported redirect to `https://github.com/office952/smartFlow-adv.git` (capital F). Push succeeded via configured `smartflow-adv` URL. Owner may update remote URL for consistency:
+
+```powershell
+git remote set-url origin https://github.com/office952/smartFlow-adv.git
+```
 
 ---
 
