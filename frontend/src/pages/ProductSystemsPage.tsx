@@ -225,6 +225,10 @@ export function ProductSystemsPage() {
             {decisions.length === 0 ? (
               <EmptyState title="No owner decisions" />
             ) : (
+              <>
+              <p className="field-hint">
+                Review-managed decisions (letter finishes, backing, mounting, illumination) are edited in Phase 2D intake review — not duplicated here.
+              </p>
               <table className="table">
                 <thead>
                   <tr>
@@ -245,6 +249,7 @@ export function ProductSystemsPage() {
                   ))}
                 </tbody>
               </table>
+              </>
             )}
           </Section>
         </div>

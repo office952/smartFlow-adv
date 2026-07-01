@@ -1,6 +1,8 @@
 import type { ArtworkIntakeState } from "../types/artwork";
+import type { IntakeReviewState } from "../types/intakeReview";
 import type { OwnerDecisionDefinition, SystemIntakeFormValues, WorkspaceMetaValues } from "../types/systems";
 import { deriveQuoteGeometryFromArtwork } from "./artwork/layerRoleSetup";
+import { reviewOptionsFromOwnerDecisions } from "./intakeReviewOptions";
 
 export type WorkspacePayloadJson = {
   schema_version: string;
@@ -42,10 +44,15 @@ export type WorkspacePayloadJson = {
     selected_psu_watts: number | null;
     light_color: string | null;
     backing_mode: string | null;
+    back_area_m2: number | null;
     mounting_system: string | null;
+    support_required: boolean | null;
+    support_type: string | null;
     mounting_template_enabled: boolean;
     mounting_template_area_m2: number | null;
     mounting_template_material_type: string | null;
+    packaging_required: boolean | null;
+    package_size_class: string | null;
     return_depth_mm: number | null;
     commercial_inputs: null;
   };
@@ -99,26 +106,17 @@ function readStringOrNull(values: SystemIntakeFormValues, key: string): string |
   return String(raw);
 }
 
-function mapMountingSystem(values: SystemIntakeFormValues): string | null {
-  if (readBoolean(values, "support_required")) {
-    const supportType = readStringOrNull(values, "support_type");
-    if (supportType === "frame" || supportType === "panel") {
-      return "steel_bars";
-    }
-    if (supportType === "custom") {
-      return "aluminum_bars";
-    }
-  }
-  return "direct_wall";
-}
-
 function coalesceDimension(
   formValue: number | null,
+  reviewValue: number | null,
   artworkValue: number | null,
   artworkPresent: boolean,
 ): number | null {
   if (formValue !== null) {
     return formValue;
+  }
+  if (reviewValue !== null) {
+    return reviewValue;
   }
   if (artworkPresent) {
     return artworkValue;
@@ -126,8 +124,26 @@ function coalesceDimension(
   return null;
 }
 
+function sumConfirmedGroupMetric(
+  groups: ArtworkIntakeState["letterGroupFinishes"],
+  key: "face_area_m2" | "perimeter_m",
+  confirmedOnly: boolean,
+): number | null {
+  const rows = confirmedOnly ? groups.filter((g) => g.confirmed) : groups;
+  let total = 0;
+  let counted = 0;
+  for (const row of rows) {
+    const value = row[key];
+    if (value !== null && value > 0) {
+      total += value;
+      counted += 1;
+    }
+  }
+  return counted > 0 ? total : null;
+}
+
 /**
- * Build structured payload_json from system-driven form values and optional artwork state.
+ * Build structured payload_json from form values, artwork, and Phase 2D review state.
  */
 export function buildWorkspacePayloadJson(
   templateCode: string,
@@ -139,26 +155,42 @@ export function buildWorkspacePayloadJson(
     componentCodes?: string[];
     commercialRuleCodes?: string[];
     artwork?: ArtworkIntakeState;
+    review?: IntakeReviewState;
   },
 ): WorkspacePayloadJson {
   const artwork = options?.artwork;
+  const review = options?.review;
   const hasArtwork = artwork?.analysis != null && artwork.svgSource.upload_status === "analyzed";
+  const letterGroups = artwork?.letterGroupFinishes ?? [];
 
   const formWidth = readNumber(values, "artwork_width_mm");
   const formHeight = readNumber(values, "artwork_height_mm");
   const artworkGeometry = hasArtwork
-    ? deriveQuoteGeometryFromArtwork(artwork!.analysis, artwork!.letterGroupFinishes, artwork!.layerRoleSetup)
+    ? deriveQuoteGeometryFromArtwork(artwork!.analysis, letterGroups, artwork!.layerRoleSetup)
     : null;
 
-  const width = coalesceDimension(formWidth, artworkGeometry?.width_mm ?? null, Boolean(hasArtwork));
-  const height = coalesceDimension(formHeight, artworkGeometry?.height_mm ?? null, Boolean(hasArtwork));
-  const perimeter = readNumber(values, "perimeter_ml") ?? artworkGeometry?.letter_perimeter_m ?? null;
-  const faceArea = readNumber(values, "face_area_m2") ?? artworkGeometry?.letter_face_area_m2 ?? null;
-  const backArea = readNumber(values, "back_area_m2");
-  const finishArea = readNumber(values, "finish_area_m2") ?? artworkGeometry?.finish_area_m2 ?? faceArea;
-  const cutLength = readNumber(values, "cut_length_ml") ?? artworkGeometry?.cut_length_ml ?? perimeter;
-  const letterCount = readOptionalInt(values, "letter_count") ?? artworkGeometry?.letter_count ?? null;
-  const illuminated = templateCode === "volumetric_letters_frontlit" ? readBoolean(values, "illuminated", true) : false;
+  const reviewFaceArea = sumConfirmedGroupMetric(letterGroups, "face_area_m2", true);
+  const reviewPerimeter = sumConfirmedGroupMetric(letterGroups, "perimeter_m", true);
+
+  const width = coalesceDimension(formWidth, null, artworkGeometry?.width_mm ?? null, Boolean(hasArtwork));
+  const height = coalesceDimension(formHeight, null, artworkGeometry?.height_mm ?? null, Boolean(hasArtwork));
+  const perimeter =
+    readNumber(values, "perimeter_ml") ?? reviewPerimeter ?? artworkGeometry?.letter_perimeter_m ?? null;
+  const faceArea =
+    readNumber(values, "face_area_m2") ?? reviewFaceArea ?? artworkGeometry?.letter_face_area_m2 ?? null;
+  const backArea = review?.backing.back_area_m2 ?? readNumber(values, "back_area_m2");
+  const finishArea = readNumber(values, "finish_area_m2") ?? faceArea ?? artworkGeometry?.finish_area_m2 ?? null;
+  const cutLength = readNumber(values, "cut_length_ml") ?? perimeter ?? artworkGeometry?.cut_length_ml ?? null;
+  const letterCount =
+    readOptionalInt(values, "letter_count") ??
+    (letterGroups.filter((g) => g.confirmed).length || null) ??
+    artworkGeometry?.letter_count ??
+    null;
+
+  const illum = review?.illumination;
+  const illuminated =
+    illum?.illuminated ??
+    (templateCode === "volumetric_letters_frontlit" ? readBoolean(values, "illuminated", true) : false);
 
   const ownerSnapshot: Record<string, string> = {};
   for (const [code, value] of Object.entries(ownerDecisionValues)) {
@@ -168,7 +200,24 @@ export function buildWorkspacePayloadJson(
     }
   }
 
-  const returnDepthFromGroups = artwork?.letterGroupFinishes.find((g) => g.return_depth_mm != null)?.return_depth_mm ?? null;
+  if (illum?.light_color) {
+    ownerSnapshot.light_color = illum.light_color;
+  }
+  if (illum?.led_density_policy) {
+    ownerSnapshot.led_density_policy = illum.led_density_policy;
+  }
+  if (illum?.psu_policy) {
+    ownerSnapshot.psu_policy = illum.psu_policy;
+  }
+  if (review?.backing.back_material) {
+    ownerSnapshot.back_material = review.backing.back_material;
+  }
+  if (review?.packaging.delivery_policy) {
+    ownerSnapshot.delivery_policy = review.packaging.delivery_policy;
+  }
+
+  const returnDepthFromGroups = letterGroups.find((g) => g.return_depth_mm != null)?.return_depth_mm ?? null;
+  const mounting = review?.mounting;
 
   return {
     schema_version: "1.0.0",
@@ -199,18 +248,28 @@ export function buildWorkspacePayloadJson(
       finish_area_m2: finishArea,
     },
     finish_setup: {
-      letter_group_finishes: artwork?.letterGroupFinishes ?? [],
-      artwork_finishes: [],
+      letter_group_finishes: letterGroups,
+      artwork_finishes: review?.artworkFinishes ?? [],
       illuminated,
-      lighting_system_type: readStringOrNull(values, "lighting_system_type") ?? (illuminated ? "led_modules" : null),
-      led_module_count: readOptionalInt(values, "estimated_led_count"),
-      selected_psu_watts: readOptionalInt(values, "estimated_power_w"),
-      light_color: ownerSnapshot.light_color ?? null,
-      backing_mode: null,
-      mounting_system: mapMountingSystem(values),
-      mounting_template_enabled: readBoolean(values, "mounting_required"),
-      mounting_template_area_m2: readNumber(values, "mounting_template_area_m2"),
-      mounting_template_material_type: readStringOrNull(values, "mounting_type"),
+      lighting_system_type:
+        illum?.lighting_system_type ??
+        readStringOrNull(values, "lighting_system_type") ??
+        (illuminated ? "led_modules" : null),
+      led_module_count: illum?.led_module_count ?? readOptionalInt(values, "estimated_led_count"),
+      selected_psu_watts: illum?.selected_psu_watts ?? readOptionalInt(values, "estimated_power_w"),
+      light_color: illum?.light_color ?? ownerSnapshot.light_color ?? null,
+      backing_mode: review?.backing.backing_mode ?? null,
+      back_area_m2: backArea,
+      mounting_system: mounting?.mounting_system ?? null,
+      support_required: mounting?.support_required ?? null,
+      support_type: mounting?.support_type ?? null,
+      mounting_template_enabled: mounting?.mounting_template_enabled ?? readBoolean(values, "mounting_required"),
+      mounting_template_area_m2:
+        mounting?.mounting_template_area_m2 ?? readNumber(values, "mounting_template_area_m2"),
+      mounting_template_material_type:
+        mounting?.mounting_template_material_type ?? readStringOrNull(values, "mounting_type"),
+      packaging_required: review?.packaging.packaging_required ?? readBoolean(values, "packaging_required"),
+      package_size_class: review?.packaging.package_size_class ?? readStringOrNull(values, "package_size_class"),
       return_depth_mm: readNumber(values, "return_depth_mm") ?? returnDepthFromGroups,
       commercial_inputs: null,
     },
@@ -247,7 +306,11 @@ export function buildLegacyFlatFallbackFromPayload(payloadJson: WorkspacePayload
 }
 
 export function finishOptionsFromOwnerDecisions(decisions: OwnerDecisionDefinition[]) {
-  const finishType = decisions.find((d) => d.decision_code === "finish_type")?.allowed_values ?? [];
-  const returnFinish = decisions.find((d) => d.decision_code === "return_finish")?.allowed_values ?? [];
-  return { finishTypeOptions: finishType, returnFinishOptions: returnFinish };
+  const opts = reviewOptionsFromOwnerDecisions(decisions);
+  return {
+    finishTypeOptions:
+      opts.letterFaceFinishOptions.length > 0 ? opts.letterFaceFinishOptions : opts.finishTypeOptions,
+    returnFinishOptions:
+      opts.letterReturnFinishOptions.length > 0 ? opts.letterReturnFinishOptions : [],
+  };
 }

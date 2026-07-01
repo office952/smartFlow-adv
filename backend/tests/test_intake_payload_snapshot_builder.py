@@ -82,7 +82,7 @@ def test_derives_support_from_mounting_system() -> None:
 
     direct = build_intake_snapshot({"finish_setup": {"mounting_system": "direct_wall"}})
     assert direct["support_required"] is False
-    assert direct["support_type"] == "direct_wall"
+    assert "support_type" not in direct
 
 
 def test_derives_mounting_from_template_fields() -> None:
@@ -119,6 +119,44 @@ def test_missing_values_stay_missing() -> None:
     assert "face_area_m2" not in snapshot
     assert "perimeter_ml" not in snapshot
     assert "estimated_led_count" not in snapshot
+
+
+def test_extracts_illumination_and_packaging_from_finish_setup() -> None:
+    snapshot = build_intake_snapshot(
+        {
+            "quote_geometry": {"letter_face_area_m2": 2.0, "letter_perimeter_m": 10.0},
+            "finish_setup": {
+                "illuminated": True,
+                "lighting_system_type": "led_modules",
+                "light_color": "warm_3000k",
+                "led_module_count": 32,
+                "selected_psu_watts": 120,
+                "backing_mode": "forex_10_no_bevel",
+                "back_area_m2": 1.8,
+                "mounting_system": "steel_bars",
+                "support_required": True,
+                "support_type": "steel_bars",
+                "mounting_template_enabled": True,
+                "mounting_template_area_m2": 2.5,
+                "packaging_required": True,
+                "package_size_class": "large",
+                "letter_group_finishes": [
+                    {"group_key": "a", "face_area_m2": 1.0, "perimeter_m": 5.0, "confirmed": True},
+                    {"group_key": "b", "face_area_m2": 1.0, "perimeter_m": 5.0, "confirmed": False},
+                ],
+            },
+        }
+    )
+    assert snapshot["estimated_led_count"] == 32
+    assert snapshot["estimated_power_w"] == 120
+    assert snapshot["lighting_system_type"] == "led_modules"
+    assert snapshot["backing_mode"] == "forex_10_no_bevel"
+    assert snapshot["back_area_m2"] == 1.8
+    assert snapshot["support_required"] is True
+    assert snapshot["packaging_required"] is True
+    assert snapshot["package_size_class"] == "large"
+    assert snapshot["face_area_m2"] == 2.0
+    assert snapshot["letter_groups_confirmed"] is False
 
 
 def test_derives_letter_count_from_confirmed_face_layers() -> None:

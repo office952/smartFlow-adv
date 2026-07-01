@@ -179,6 +179,7 @@ INTAKE_FIELDS: dict[str, IntakeFieldDefinition] = {
         required=False,
         applies_to_template_codes=[FRONTLIT_TEMPLATE],
         feeds_rules=["led_modules_rule"],
+        notes="Managed in Phase 2D Iluminare review — options from OwnerDecisionRegistry.",
     ),
     "mounting_template_area_m2": IntakeFieldDefinition(
         field_code="mounting_template_area_m2",

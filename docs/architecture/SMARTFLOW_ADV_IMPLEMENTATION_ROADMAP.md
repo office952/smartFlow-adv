@@ -97,6 +97,26 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ---
 
+## Phase 2D — Letter group finishes review
+
+**Status:** Complete (2026-07-01)
+
+**Goal:** Operator review UX for finishes, illumination, backing, support/mounting after SVG/layer setup.
+
+| Deliverable | Description |
+|-------------|-------------|
+| Collapsible review panels | Finisaje, Iluminare, Spate, Montaj, Ambalare |
+| Letter group finish cards | Registry-driven finish options, per-group confirm |
+| Payload merge | Review state → finish_setup + owner_decisions_snapshot |
+| Registry extensions | letter_face_finish_type, backing_mode, mounting_system, etc. |
+| Completion summary | Local gap hints — backend preview remains truth |
+
+**Forbidden:** Quote write, snapshot, order, frontend totals.
+
+**Next:** Phase 2E geometry analyzer OR Phase 3C preview blocker polish.
+
+---
+
 ## Phase 3 — Quote preview from rules
 
 **Status:** Complete (2026-07-01)

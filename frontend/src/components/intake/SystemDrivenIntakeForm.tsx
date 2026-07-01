@@ -7,7 +7,11 @@ import {
   getTemplateOwnerDecisions,
   listProductTemplates,
 } from "../../lib/systemsApi";
+import { IntakeReviewPanel } from "../intake-review/IntakeReviewPanel";
+import { reviewOptionsFromOwnerDecisions } from "../../lib/intakeReviewOptions";
 import { finishOptionsFromOwnerDecisions } from "../../lib/intakePayloadBuilder";
+import { createEmptyReviewState, REVIEW_MANAGED_FIELD_CODES } from "../../types/intakeReview";
+import type { IntakeReviewState } from "../../types/intakeReview";
 import { createEmptyArtworkState } from "../../types/artwork";
 import type { ArtworkIntakeState } from "../../types/artwork";
 import type {
@@ -33,6 +37,7 @@ export type SystemDrivenIntakeSubmitPayload = {
   intakeValues: SystemIntakeFormValues;
   ownerDecisionValues: OwnerDecisionFormValues;
   artwork: ArtworkIntakeState;
+  review: IntakeReviewState;
 };
 
 type SystemDrivenIntakeFormProps = {
@@ -70,6 +75,7 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
   const [ownerValues, setOwnerValues] = useState<OwnerDecisionFormValues>({});
   const [meta, setMeta] = useState<WorkspaceMetaValues>({ title: "", client_name: "" });
   const [artwork, setArtwork] = useState<ArtworkIntakeState>(() => createEmptyArtworkState());
+  const [review, setReview] = useState<IntakeReviewState>(() => createEmptyReviewState(true));
   const [loading, setLoading] = useState(true);
   const [schemaError, setSchemaError] = useState<string | null>(null);
 
@@ -150,6 +156,7 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
   );
 
   const finishOptions = useMemo(() => finishOptionsFromOwnerDecisions(ownerDecisions), [ownerDecisions]);
+  const reviewOptions = useMemo(() => reviewOptionsFromOwnerDecisions(ownerDecisions), [ownerDecisions]);
 
   const defaultReturnDepthMm = useMemo(() => {
     const raw = intakeValues.return_depth_mm;
@@ -161,7 +168,28 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
   }, [intakeValues.return_depth_mm]);
 
   const visibleIntakeFields = intakeFields.filter(
-    (field) => field.field_code !== "template_code" && field.source !== "computed",
+    (field) =>
+      field.field_code !== "template_code" &&
+      field.source !== "computed" &&
+      !REVIEW_MANAGED_FIELD_CODES.has(field.field_code),
+  );
+
+  const ownerDecisionsForForm = ownerDecisions.filter(
+    (d) =>
+      ![
+        "letter_face_finish_type",
+        "letter_return_finish_type",
+        "backing_mode",
+        "mounting_system",
+        "lighting_system_type",
+        "face_vinyl_roll_width_mm",
+        "package_size_class",
+        "light_color",
+        "led_density_policy",
+        "psu_policy",
+        "back_material",
+        "delivery_policy",
+      ].includes(d.decision_code),
   );
 
   function updateIntakeValue(fieldCode: string, value: string | number | boolean | null) {
@@ -180,6 +208,7 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
       intakeValues: { ...intakeValues, template_code: templateCode },
       ownerDecisionValues: ownerValues,
       artwork,
+      review,
     });
   }
 
@@ -249,7 +278,7 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
         <EmptyState title="Loading intake schema…" description={`Fetching fields for ${templateCode}.`} />
       ) : (
         <>
-          <Section title="Artwork / SVG (Phase 2C)">
+          <Section title="Artwork / SVG">
             <ArtworkUploadPanel
               state={artwork}
               onChange={setArtwork}
@@ -260,7 +289,21 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
             />
           </Section>
 
+          <Section title="Intake review (Finisaje / Iluminare / Montaj)">
+            <IntakeReviewPanel
+              review={review}
+              letterGroups={artwork.letterGroupFinishes}
+              disabled={submitting}
+              options={reviewOptions}
+              onReviewChange={setReview}
+              onLetterGroupsChange={(letterGroupFinishes) => setArtwork((current) => ({ ...current, letterGroupFinishes }))}
+            />
+          </Section>
+
           <Section title="Intake fields (registry)">
+            <p className="field-hint">
+              Geometry, illumination, support, and mounting fields are managed in the review section above.
+            </p>
             {visibleIntakeFields.length === 0 ? (
               <EmptyState title="No intake fields" description="Backend returned an empty IntakeFieldRegistry for this template." />
             ) : (
@@ -279,11 +322,11 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
           </Section>
 
           <Section title="Owner decisions (registry)">
-            {ownerDecisions.length === 0 ? (
+            {ownerDecisionsForForm.length === 0 ? (
               <EmptyState title="No owner decisions" description="Backend returned no OwnerDecisionRegistry entries for this template." />
             ) : (
               <div className="field-grid">
-                {ownerDecisions.map((decision) => (
+                {ownerDecisionsForForm.map((decision) => (
                   <OwnerDecisionRenderer
                     key={decision.decision_code}
                     decision={decision}

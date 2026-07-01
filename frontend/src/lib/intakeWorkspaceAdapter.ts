@@ -1,4 +1,6 @@
 import type { ArtworkIntakeState } from "../types/artwork";
+import type { IntakeReviewState } from "../types/intakeReview";
+import { REVIEW_MANAGED_FIELD_CODES } from "../types/intakeReview";
 import type { IntakeFieldDefinition, OwnerDecisionDefinition, SystemIntakeFormValues, WorkspaceMetaValues } from "../types/systems";
 import type { WorkspaceCreateInput } from "./api";
 import { buildLegacyFlatFallbackFromPayload, buildWorkspacePayloadJson } from "./intakePayloadBuilder";
@@ -73,6 +75,7 @@ export function adaptSystemIntakeToWorkspaceCreate(
   intakeFields: IntakeFieldDefinition[],
   ownerDecisionValues: Record<string, string> = {},
   artwork?: ArtworkIntakeState,
+  review?: IntakeReviewState,
 ): AdaptResult {
   const issues: string[] = [];
 
@@ -88,7 +91,12 @@ export function adaptSystemIntakeToWorkspaceCreate(
   }
 
   for (const field of intakeFields) {
-    if (field.field_code === "template_code" || field.field_type === "collection" || field.source === "computed") {
+    if (
+      field.field_code === "template_code" ||
+      field.field_type === "collection" ||
+      field.source === "computed" ||
+      REVIEW_MANAGED_FIELD_CODES.has(field.field_code)
+    ) {
       continue;
     }
     if (!field.required) {
@@ -100,17 +108,31 @@ export function adaptSystemIntakeToWorkspaceCreate(
     }
   }
 
-  const width = readNumber(values, "artwork_width_mm", "Artwork width", !artwork?.analysis, issues);
-  const height = readNumber(values, "artwork_height_mm", "Artwork height", !artwork?.analysis, issues);
-  const perimeter = readNumber(values, "perimeter_ml", "Perimeter", !artwork?.letterGroupFinishes.length, issues);
-  const faceArea = readNumber(values, "face_area_m2", "Face area", !artwork?.letterGroupFinishes.length, issues);
-  const returnDepth = readNumber(values, "return_depth_mm", "Return depth", true, issues);
+  const hasLetterGroups = (artwork?.letterGroupFinishes.length ?? 0) > 0;
+  const hasConfirmedMetrics = artwork?.letterGroupFinishes.some(
+    (g) => g.confirmed && g.face_area_m2 != null && g.perimeter_m != null,
+  );
+
+  readNumber(values, "artwork_width_mm", "Artwork width", !artwork?.analysis, issues);
+  readNumber(values, "artwork_height_mm", "Artwork height", !artwork?.analysis, issues);
+  readNumber(values, "perimeter_ml", "Perimeter", !hasLetterGroups && !hasConfirmedMetrics, issues);
+  readNumber(values, "face_area_m2", "Face area", !hasLetterGroups && !hasConfirmedMetrics, issues);
+  readNumber(values, "return_depth_mm", "Return depth", !hasLetterGroups, issues);
+
+  if (review?.illumination.illuminated) {
+    if (review.illumination.led_module_count == null) {
+      issues.push("LED module count is required when illuminated (Iluminare review).");
+    }
+    if (review.illumination.selected_psu_watts == null) {
+      issues.push("PSU watts is required when illuminated (Iluminare review).");
+    }
+  }
 
   if (issues.length > 0) {
     return { ok: false, issues };
   }
 
-  const payloadJson = buildWorkspacePayloadJson(templateCode, meta, values, ownerDecisionValues, { artwork });
+  const payloadJson = buildWorkspacePayloadJson(templateCode, meta, values, ownerDecisionValues, { artwork, review });
   const flat = buildLegacyFlatFallbackFromPayload(payloadJson);
 
   const payload: WorkspaceCreateInput = {

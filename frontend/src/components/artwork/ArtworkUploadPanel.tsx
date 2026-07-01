@@ -9,7 +9,6 @@ import {
 import type { ArtworkIntakeState } from "../../types/artwork";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-import { LetterGroupFinishesPanel } from "./LetterGroupFinishesPanel";
 import { SvgMetadataPanel } from "./SvgMetadataPanel";
 import { SvgLayerList } from "./SvgLayerList";
 
@@ -116,16 +115,6 @@ export function ArtworkUploadPanel({
 
       {state.layerRoleSetup.layers.length > 0 ? (
         <SvgLayerList setup={state.layerRoleSetup} disabled={disabled} onChange={handleLayerSetupChange} />
-      ) : null}
-
-      {state.letterGroupFinishes.length > 0 ? (
-        <LetterGroupFinishesPanel
-          groups={state.letterGroupFinishes}
-          disabled={disabled}
-          finishTypeOptions={finishTypeOptions}
-          returnFinishOptions={returnFinishOptions}
-          onChange={(letterGroupFinishes) => onChange({ ...state, letterGroupFinishes })}
-        />
       ) : null}
 
       {state.analysis ? (

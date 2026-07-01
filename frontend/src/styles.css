@@ -938,3 +938,90 @@ body {
   color: var(--sf-text-muted);
   font-size: 0.8rem;
 }
+
+/* Phase 2D — intake review */
+.intake-review-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.review-note {
+  margin-bottom: 4px;
+}
+
+.review-section {
+  border: 1px solid var(--sf-border);
+  border-radius: 8px;
+  background: var(--sf-surface-muted);
+}
+
+.review-section-summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: baseline;
+  list-style: none;
+}
+
+.review-section-summary::-webkit-details-marker {
+  display: none;
+}
+
+.review-section-title {
+  font-weight: 600;
+}
+
+.review-section-hint {
+  color: var(--sf-text-muted);
+  font-size: 0.88rem;
+}
+
+.review-section-body {
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--sf-border);
+}
+
+.letter-group-finish-card {
+  border: 1px solid var(--sf-border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--sf-surface);
+}
+
+.letter-group-finish-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.review-completion-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.review-completion-stats dt {
+  font-size: 0.8rem;
+  color: var(--sf-text-muted);
+}
+
+.review-gap-list {
+  margin: 8px 0 0;
+  padding-left: 1.2rem;
+  color: var(--sf-text-muted);
+  font-size: 0.9rem;
+}
+
+.artwork-finish-row {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--sf-border);
+}

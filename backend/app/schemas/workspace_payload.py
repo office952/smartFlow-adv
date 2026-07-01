@@ -66,9 +66,11 @@ class WorkspaceLetterGroupFinishPayload(BaseModel):
 
 
 class WorkspaceArtworkFinishPayload(BaseModel):
+    group_key: str | None = None
     layer_key: str | None = None
     layer_name: str | None = None
     estimated_area_m2: float | None = None
+    finish_type: str | None = None
     confirmed: bool = False
 
 
@@ -88,10 +90,15 @@ class WorkspaceFinishSetupPayload(BaseModel):
     selected_psu_watts: int | None = None
     light_color: str | None = None
     backing_mode: str | None = None
+    back_area_m2: float | None = None
     mounting_system: str | None = None
+    support_required: bool | None = None
+    support_type: str | None = None
     mounting_template_enabled: bool | None = None
     mounting_template_area_m2: float | None = None
     mounting_template_material_type: str | None = None
+    packaging_required: bool | None = None
+    package_size_class: str | None = None
     return_depth_mm: float | None = None
     commercial_inputs: WorkspaceCommercialInputsPayload | None = None
 

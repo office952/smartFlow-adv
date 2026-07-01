@@ -75,7 +75,9 @@ def test_frontlit_owner_decisions_listed() -> None:
     codes = {decision.decision_code for decision in decisions}
     assert "face_material" in codes
     assert "mounting_type_decision" in codes
-    assert len(codes) >= 18
+    assert "letter_face_finish_type" in codes
+    assert "backing_mode" in codes
+    assert len(codes) >= 24
 
 
 @pytest.mark.parametrize(

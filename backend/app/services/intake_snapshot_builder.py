@@ -124,6 +124,8 @@ def build_intake_snapshot(payload_json: dict[str, Any] | None) -> dict[str, Any]
         cut_length = perimeter_m
 
     back_area = _positive_number(geometry.get("back_area_m2"))
+    if back_area is None:
+        back_area = _positive_number(finish.get("back_area_m2"))
     finish_area = _positive_number(geometry.get("finish_area_m2"))
     if finish_area is None and face_area is not None:
         finish_area = face_area
@@ -140,10 +142,14 @@ def build_intake_snapshot(payload_json: dict[str, Any] | None) -> dict[str, Any]
     mounting_system = finish.get("mounting_system")
     support_required: bool | None = None
     support_type: str | None = None
-    if mounting_system is not None:
+    if finish.get("support_required") is not None:
+        support_required = bool(finish.get("support_required"))
+        st = finish.get("support_type")
+        support_type = str(st).strip() if st is not None and str(st).strip() else None
+    elif mounting_system is not None:
         ms = str(mounting_system).strip()
         support_required = ms in BAR_MOUNTING_SYSTEMS
-        support_type = ms if ms else None
+        support_type = ms if ms in BAR_MOUNTING_SYSTEMS else None
 
     mounting_required: bool | None = None
     if finish.get("mounting_template_enabled") is not None:
@@ -201,6 +207,16 @@ def build_intake_snapshot(payload_json: dict[str, Any] | None) -> dict[str, Any]
     put("mounting_required", mounting_required)
     put("mounting_type", mounting_type)
     put("mounting_template_area_m2", _positive_number(finish.get("mounting_template_area_m2")))
+
+    if finish.get("packaging_required") is not None:
+        put("packaging_required", bool(finish.get("packaging_required")))
+    pkg = finish.get("package_size_class")
+    if pkg is not None and str(pkg).strip():
+        put("package_size_class", str(pkg).strip())
+
+    backing = finish.get("backing_mode")
+    if backing is not None and str(backing).strip():
+        put("backing_mode", str(backing).strip())
 
     put("letter_groups_confirmed", _letter_groups_confirmed(group_list))
     put("artwork_confirmed", _artwork_confirmed(artwork_list))
