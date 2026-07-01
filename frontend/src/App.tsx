@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/layout/AppShell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { NewWorkspacePage } from "./pages/NewWorkspacePage";
+import { ProductSystemsPage } from "./pages/ProductSystemsPage";
 import { WorkspacePreviewPage } from "./pages/WorkspacePreviewPage";
 
 
@@ -11,6 +12,7 @@ export default function App() {
     <AppShell>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
+        <Route path="/systems" element={<ProductSystemsPage />} />
         <Route path="/workspaces/new" element={<NewWorkspacePage />} />
         <Route path="/workspaces/:workspaceId" element={<WorkspacePreviewPage />} />
       </Routes>

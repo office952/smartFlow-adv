@@ -45,6 +45,8 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ## Phase 2 — Intake schema from systems
 
+**Status:** Complete (2026-07-01)
+
 **Goal:** Frontend form driven by backend `IntakeFieldRegistry`.
 
 | Deliverable | Description |

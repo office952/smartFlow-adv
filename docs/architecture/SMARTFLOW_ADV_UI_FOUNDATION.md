@@ -35,7 +35,7 @@ AppShell
 |------|-------|--------|
 | Dashboard | `/` | Active |
 | Workspaces | `/workspaces/new`, `/workspaces/:id` | Active |
-| Product Systems | — | Disabled (Phase 2) |
+| Product Systems | `/systems` | Active (read-only explorer) |
 | Quote Preview | — | Disabled |
 | Offers | — | Disabled |
 | Settings | — | Disabled |
@@ -102,7 +102,7 @@ Pages and legacy classes reference tokens — not hardcoded hex in page files.
 ## How UI consumes backend systems (Phase 2+)
 
 1. **Product Systems page** — `GET /api/v1/systems/product-templates`
-2. **Dynamic intake form** — `GET .../intake-fields` + `.../owner-decisions`
+2. **Dynamic intake form** — `GET .../intake-fields` + `.../owner-decisions` via `SystemDrivenIntakeForm`
 3. **Quote preview page** — existing preview API; UI displays status/blockers/lines only
 4. **Offers page** — snapshot/export from frozen backend records
 

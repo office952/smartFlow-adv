@@ -13,7 +13,7 @@ export type NavItem = {
 export const SMARTFLOW_NAV: NavItem[] = [
   { label: "Dashboard", to: "/", end: true },
   { label: "Workspaces", to: "/workspaces/new", matchPrefix: "/workspaces" },
-  { label: "Product Systems", disabled: true, hint: "Soon" },
+  { label: "Product Systems", to: "/systems", matchPrefix: "/systems" },
   { label: "Quote Preview", disabled: true, hint: "Soon" },
   { label: "Offers", disabled: true, hint: "Soon" },
   { label: "Settings", disabled: true, hint: "Soon" },
@@ -70,7 +70,7 @@ export function SideNav() {
         })}
       </nav>
 
-      <p className="app-sidebar__footnote">Phase 1B UI foundation — no calculator logic in frontend.</p>
+      <p className="app-sidebar__footnote">Phase 2 — system-driven intake from backend registries.</p>
     </aside>
   );
 }

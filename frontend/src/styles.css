@@ -581,6 +581,34 @@ body {
   line-height: 1.55;
 }
 
+.field-label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--sf-text-muted);
+  line-height: 1.45;
+}
+
+.intake-system-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.intake-system-note code,
+.note code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;

@@ -237,7 +237,9 @@ backend/tests/test_systems_registry.py — registry + API tests
 
 ### Next phase
 
-Phase 2 — Intake schema from systems: frontend consumes `GET .../intake-fields` and owner-decisions.
+Phase 2 — Intake schema from systems: **complete (2026-07-01)** — see worklog.
+
+Phase 3 — Quote preview from rules: `QuotePreviewService` reads CommercialRuleRegistry.
 
 **Explicitly not Phase 1:** dynamic form rendering, quote preview rewrite, quote write, snapshot, order.
 
