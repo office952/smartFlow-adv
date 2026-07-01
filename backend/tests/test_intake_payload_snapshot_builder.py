@@ -121,6 +121,24 @@ def test_missing_values_stay_missing() -> None:
     assert "estimated_led_count" not in snapshot
 
 
+def test_derives_letter_count_from_confirmed_face_layers() -> None:
+    snapshot = build_intake_snapshot(
+        {
+            "quote_geometry": {},
+            "layer_role_setup": {
+                "confirmation_status": "confirmed",
+                "layers": [
+                    {"layer_id": "a", "confirmed_role": "face", "confirmed": True, "ignored": False},
+                    {"layer_id": "b", "confirmed_role": "face", "confirmed": True, "ignored": False},
+                    {"layer_id": "c", "confirmed_role": "back", "confirmed": True, "ignored": False},
+                ],
+            },
+            "finish_setup": {"letter_group_finishes": []},
+        }
+    )
+    assert snapshot["letter_count"] == 2
+
+
 def test_empty_payload_returns_empty_snapshot() -> None:
     assert build_intake_snapshot({}) == {}
     assert build_intake_snapshot(None) == {}

@@ -322,6 +322,31 @@ class WorkspaceStore:
             return None
         return self._workspace_from_row(row)
 
+    def update_workspace_payload(
+        self,
+        workspace_id: str,
+        payload_json_raw: dict,
+    ) -> IntakeV6WorkspaceDetail | None:
+        existing = self.get_workspace(workspace_id)
+        if existing is None:
+            return None
+
+        payload_json = parse_workspace_payload(payload_json_raw)
+        payload_json_text = json.dumps(payload_json)
+
+        with self._connect() as connection:
+            connection.execute(
+                """
+                UPDATE workspaces
+                SET payload_json = ?
+                WHERE id = ?
+                """,
+                (payload_json_text, workspace_id),
+            )
+            connection.commit()
+
+        return self.get_workspace(workspace_id)
+
     def save_preview(self, preview: QuotePreviewResponse) -> QuotePreviewResponse:
         with self._connect() as connection:
             connection.execute(

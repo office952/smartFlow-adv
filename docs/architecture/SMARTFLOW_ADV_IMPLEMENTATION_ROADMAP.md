@@ -77,13 +77,23 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ---
 
-## Phase 2C — Artwork / SVG / layer roles (next)
+## Phase 2C — Artwork / SVG / layer roles
 
-**Status:** Not started
+**Status:** Complete (2026-07-01)
 
 **Goal:** Populate `svg_source`, `layer_role_setup`, `letter_group_finishes` in payload from operator UX.
 
-**Depends on:** Phase 2B payload base.
+| Deliverable | Description |
+|-------------|-------------|
+| SVG upload + client parser | DOMParser metadata, layers, path counts — no commercial geometry |
+| Layer role setup UI | Operator-confirmed roles → `layer_role_setup` |
+| Letter group finishes | Draft rows from face layers; finish options from OwnerDecisionRegistry |
+| Payload PATCH | `PATCH /api/v1/intake-v6/workspaces/{id}/payload` |
+| Snapshot builder | Confirmed group sums; letter_count from face layers |
+
+**Forbidden:** Quote write, snapshot, order, frontend totals, fake geometry.
+
+**Next:** Phase 2D letter group finishes review OR Phase 2E SVG geometry analyzer.
 
 ---
 

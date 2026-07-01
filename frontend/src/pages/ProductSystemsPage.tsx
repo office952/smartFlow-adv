@@ -186,6 +186,7 @@ export function ProductSystemsPage() {
                     <th>Field</th>
                     <th>Type</th>
                     <th>Required</th>
+                    <th>Source</th>
                     <th>Feeds rules</th>
                   </tr>
                 </thead>
@@ -193,14 +194,31 @@ export function ProductSystemsPage() {
                   {fields.map((field) => (
                     <tr key={field.field_code}>
                       <td>{field.label}</td>
-                      <td>{field.field_type}</td>
+                      <td>
+                        {field.field_type}
+                        {field.field_type === "collection" ? (
+                          <Badge tone="default"> collection</Badge>
+                        ) : null}
+                      </td>
                       <td>{field.required ? "yes" : "no"}</td>
+                      <td>
+                        {field.field_type === "collection" ? (
+                          <Badge tone="success">collection / SVG</Badge>
+                        ) : field.source === "computed" ? (
+                          <Badge tone="warning">computed</Badge>
+                        ) : (
+                          field.source
+                        )}
+                      </td>
                       <td>{field.feeds_rules.join(", ") || "—"}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
+            <p className="field-hint">
+              Collection fields and geometry metrics may be populated from SVG layer role setup (Phase 2C) — not hardcoded in UI.
+            </p>
           </Section>
 
           <Section title={`Owner decisions (${decisions.length})`}>

@@ -852,3 +852,89 @@ body {
     flex-direction: column;
   }
 }
+
+/* Phase 2C — artwork / SVG intake */
+.artwork-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.artwork-note {
+  margin-bottom: 4px;
+}
+
+.artwork-actions {
+  margin-top: 8px;
+}
+
+.layer-role-card .layer-role-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.layer-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--sf-border);
+  border-radius: 8px;
+  background: var(--sf-surface-muted);
+}
+
+.layer-row-name {
+  font-weight: 500;
+}
+
+.layer-row-meta {
+  color: var(--sf-text-muted);
+  font-size: 0.85rem;
+}
+
+.letter-groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.letter-group-details {
+  border: 1px solid var(--sf-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--sf-surface-muted);
+}
+
+.letter-group-details summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.svg-metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.svg-metadata-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--sf-surface-muted);
+  border: 1px solid var(--sf-border);
+}
+
+.svg-metadata-item small {
+  display: block;
+  color: var(--sf-text-muted);
+  font-size: 0.8rem;
+}

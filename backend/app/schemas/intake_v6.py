@@ -25,6 +25,10 @@ class IntakeV6WorkspaceCreate(BaseModel):
     payload_json: dict[str, Any] | None = None
 
 
+class IntakeV6WorkspacePayloadUpdate(BaseModel):
+    payload_json: dict[str, Any]
+
+
 class IntakeV6WorkspaceSummary(BaseModel):
     id: str
     title: str

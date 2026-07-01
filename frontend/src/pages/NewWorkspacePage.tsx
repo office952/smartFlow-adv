@@ -42,6 +42,7 @@ export function NewWorkspacePage() {
         payload.intakeValues,
         intakeFields,
         payload.ownerDecisionValues,
+        payload.artwork,
       );
 
       const issues = [...ownerIssues, ...(adapted.ok ? [] : adapted.issues)];

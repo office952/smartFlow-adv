@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0  
 **Date:** 2026-07-01  
-**Phase:** 2B contract  
+**Phase:** 2B contract (extended 2C artwork fields)  
 **Legacy reference:** `workos-active` Intake V6 (`IntakeV4WorkspacePayload`)
 
 ---
@@ -45,12 +45,34 @@ SVG / Artwork
 
   "svg_source": {
     "file_name": "optional.svg",
-    "upload_status": "missing|analyzed|failed"
+    "file_size_bytes": 4096,
+    "mime_type": "image/svg+xml",
+    "upload_status": "missing|analyzed|failed",
+    "uploaded_at": "2026-07-01T12:00:00Z"
   },
-  "svg_analysis_json": {},
-  "layer_role_setup": {
-    "confirmation_status": "missing|partial|complete",
+  "svg_analysis_json": {
+    "parser_version": "1.0.0",
+    "width": 1200,
+    "height": 400,
+    "viewBox": "0 0 1200 400",
+    "group_count": 2,
+    "path_count": 5,
     "layers": []
+  },
+  "layer_role_setup": {
+    "confirmation_status": "missing|draft|partial|confirmed",
+    "layers": [
+      {
+        "layer_id": "face_a",
+        "layer_name": "Face A",
+        "source": "g_id",
+        "suggested_role": "face",
+        "confirmed_role": "face",
+        "confirmed": true,
+        "ignored": false,
+        "metrics": { "face_area_m2": null, "perimeter_m": null }
+      }
+    ]
   },
 
   "quote_geometry": {

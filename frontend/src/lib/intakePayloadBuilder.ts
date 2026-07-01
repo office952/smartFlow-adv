@@ -1,4 +1,6 @@
+import type { ArtworkIntakeState } from "../types/artwork";
 import type { OwnerDecisionDefinition, SystemIntakeFormValues, WorkspaceMetaValues } from "../types/systems";
+import { deriveQuoteGeometryFromArtwork } from "./artwork/layerRoleSetup";
 
 export type WorkspacePayloadJson = {
   schema_version: string;
@@ -11,11 +13,14 @@ export type WorkspacePayloadJson = {
   };
   svg_source: {
     file_name: string | null;
+    file_size_bytes?: number | null;
+    mime_type?: string | null;
     upload_status: "missing" | "analyzed" | "failed";
+    uploaded_at?: string | null;
   };
   svg_analysis_json: Record<string, unknown> | null;
   layer_role_setup: {
-    confirmation_status: "missing" | "partial" | "complete";
+    confirmation_status: string;
     layers: unknown[];
   };
   quote_geometry: {
@@ -107,9 +112,22 @@ function mapMountingSystem(values: SystemIntakeFormValues): string | null {
   return "direct_wall";
 }
 
+function coalesceDimension(
+  formValue: number | null,
+  artworkValue: number | null,
+  artworkPresent: boolean,
+): number | null {
+  if (formValue !== null) {
+    return formValue;
+  }
+  if (artworkPresent) {
+    return artworkValue;
+  }
+  return null;
+}
+
 /**
- * Build structured payload_json from system-driven form values.
- * Does not invent SVG/layer data — Phase 2C will populate collections.
+ * Build structured payload_json from system-driven form values and optional artwork state.
  */
 export function buildWorkspacePayloadJson(
   templateCode: string,
@@ -120,16 +138,26 @@ export function buildWorkspacePayloadJson(
     familyCode?: string;
     componentCodes?: string[];
     commercialRuleCodes?: string[];
+    artwork?: ArtworkIntakeState;
   },
 ): WorkspacePayloadJson {
-  const width = readNumber(values, "artwork_width_mm");
-  const height = readNumber(values, "artwork_height_mm");
-  const perimeter = readNumber(values, "perimeter_ml");
-  const faceArea = readNumber(values, "face_area_m2");
+  const artwork = options?.artwork;
+  const hasArtwork = artwork?.analysis != null && artwork.svgSource.upload_status === "analyzed";
+
+  const formWidth = readNumber(values, "artwork_width_mm");
+  const formHeight = readNumber(values, "artwork_height_mm");
+  const artworkGeometry = hasArtwork
+    ? deriveQuoteGeometryFromArtwork(artwork!.analysis, artwork!.letterGroupFinishes, artwork!.layerRoleSetup)
+    : null;
+
+  const width = coalesceDimension(formWidth, artworkGeometry?.width_mm ?? null, Boolean(hasArtwork));
+  const height = coalesceDimension(formHeight, artworkGeometry?.height_mm ?? null, Boolean(hasArtwork));
+  const perimeter = readNumber(values, "perimeter_ml") ?? artworkGeometry?.letter_perimeter_m ?? null;
+  const faceArea = readNumber(values, "face_area_m2") ?? artworkGeometry?.letter_face_area_m2 ?? null;
   const backArea = readNumber(values, "back_area_m2");
-  const finishArea = readNumber(values, "finish_area_m2");
-  const cutLength = readNumber(values, "cut_length_ml") ?? perimeter;
-  const letterCount = readOptionalInt(values, "letter_count") ?? 1;
+  const finishArea = readNumber(values, "finish_area_m2") ?? artworkGeometry?.finish_area_m2 ?? faceArea;
+  const cutLength = readNumber(values, "cut_length_ml") ?? artworkGeometry?.cut_length_ml ?? perimeter;
+  const letterCount = readOptionalInt(values, "letter_count") ?? artworkGeometry?.letter_count ?? null;
   const illuminated = templateCode === "volumetric_letters_frontlit" ? readBoolean(values, "illuminated", true) : false;
 
   const ownerSnapshot: Record<string, string> = {};
@@ -140,6 +168,8 @@ export function buildWorkspacePayloadJson(
     }
   }
 
+  const returnDepthFromGroups = artwork?.letterGroupFinishes.find((g) => g.return_depth_mm != null)?.return_depth_mm ?? null;
+
   return {
     schema_version: "1.0.0",
     template_code: LEGACY_TEMPLATE_CODE_MAP[templateCode] ?? templateCode,
@@ -149,12 +179,12 @@ export function buildWorkspacePayloadJson(
       width_mm: width,
       height_mm: height,
     },
-    svg_source: {
+    svg_source: artwork?.svgSource ?? {
       file_name: null,
       upload_status: "missing",
     },
-    svg_analysis_json: null,
-    layer_role_setup: {
+    svg_analysis_json: artwork?.analysis ? (artwork.analysis as unknown as Record<string, unknown>) : null,
+    layer_role_setup: artwork?.layerRoleSetup ?? {
       confirmation_status: "missing",
       layers: [],
     },
@@ -166,10 +196,10 @@ export function buildWorkspacePayloadJson(
       letter_face_area_m2: faceArea,
       back_area_m2: backArea,
       cut_length_ml: cutLength,
-      finish_area_m2: finishArea ?? faceArea,
+      finish_area_m2: finishArea,
     },
     finish_setup: {
-      letter_group_finishes: [],
+      letter_group_finishes: artwork?.letterGroupFinishes ?? [],
       artwork_finishes: [],
       illuminated,
       lighting_system_type: readStringOrNull(values, "lighting_system_type") ?? (illuminated ? "led_modules" : null),
@@ -181,7 +211,7 @@ export function buildWorkspacePayloadJson(
       mounting_template_enabled: readBoolean(values, "mounting_required"),
       mounting_template_area_m2: readNumber(values, "mounting_template_area_m2"),
       mounting_template_material_type: readStringOrNull(values, "mounting_type"),
-      return_depth_mm: readNumber(values, "return_depth_mm"),
+      return_depth_mm: readNumber(values, "return_depth_mm") ?? returnDepthFromGroups,
       commercial_inputs: null,
     },
     owner_decisions_snapshot: ownerSnapshot,
@@ -214,4 +244,10 @@ export function buildLegacyFlatFallbackFromPayload(payloadJson: WorkspacePayload
     mounting_template_area_m2: finish.mounting_template_area_m2,
     mounting_template_material_type: finish.mounting_template_material_type,
   };
+}
+
+export function finishOptionsFromOwnerDecisions(decisions: OwnerDecisionDefinition[]) {
+  const finishType = decisions.find((d) => d.decision_code === "finish_type")?.allowed_values ?? [];
+  const returnFinish = decisions.find((d) => d.decision_code === "return_finish")?.allowed_values ?? [];
+  return { finishTypeOptions: finishType, returnFinishOptions: returnFinish };
 }

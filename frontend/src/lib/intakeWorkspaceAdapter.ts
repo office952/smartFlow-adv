@@ -1,3 +1,4 @@
+import type { ArtworkIntakeState } from "../types/artwork";
 import type { IntakeFieldDefinition, OwnerDecisionDefinition, SystemIntakeFormValues, WorkspaceMetaValues } from "../types/systems";
 import type { WorkspaceCreateInput } from "./api";
 import { buildLegacyFlatFallbackFromPayload, buildWorkspacePayloadJson } from "./intakePayloadBuilder";
@@ -71,6 +72,7 @@ export function adaptSystemIntakeToWorkspaceCreate(
   values: SystemIntakeFormValues,
   intakeFields: IntakeFieldDefinition[],
   ownerDecisionValues: Record<string, string> = {},
+  artwork?: ArtworkIntakeState,
 ): AdaptResult {
   const issues: string[] = [];
 
@@ -98,17 +100,17 @@ export function adaptSystemIntakeToWorkspaceCreate(
     }
   }
 
-  const width = readNumber(values, "artwork_width_mm", "Artwork width", true, issues);
-  const height = readNumber(values, "artwork_height_mm", "Artwork height", true, issues);
-  const perimeter = readNumber(values, "perimeter_ml", "Perimeter", true, issues);
-  const faceArea = readNumber(values, "face_area_m2", "Face area", true, issues);
+  const width = readNumber(values, "artwork_width_mm", "Artwork width", !artwork?.analysis, issues);
+  const height = readNumber(values, "artwork_height_mm", "Artwork height", !artwork?.analysis, issues);
+  const perimeter = readNumber(values, "perimeter_ml", "Perimeter", !artwork?.letterGroupFinishes.length, issues);
+  const faceArea = readNumber(values, "face_area_m2", "Face area", !artwork?.letterGroupFinishes.length, issues);
   const returnDepth = readNumber(values, "return_depth_mm", "Return depth", true, issues);
 
   if (issues.length > 0) {
     return { ok: false, issues };
   }
 
-  const payloadJson = buildWorkspacePayloadJson(templateCode, meta, values, ownerDecisionValues);
+  const payloadJson = buildWorkspacePayloadJson(templateCode, meta, values, ownerDecisionValues, { artwork });
   const flat = buildLegacyFlatFallbackFromPayload(payloadJson);
 
   const payload: WorkspaceCreateInput = {

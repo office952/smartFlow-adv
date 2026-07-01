@@ -80,6 +80,21 @@ def _artwork_confirmed(artworks: list[Any]) -> bool | None:
     return all(row.get("confirmed") is True for row in valid)
 
 
+def _count_confirmed_face_layers(layer_setup: dict[str, Any]) -> int | None:
+    layers = layer_setup.get("layers")
+    if not isinstance(layers, list):
+        return None
+    confirmed = [
+        row
+        for row in layers
+        if isinstance(row, dict)
+        and row.get("confirmed") is True
+        and row.get("ignored") is not True
+        and str(row.get("confirmed_role") or "").strip() == "face"
+    ]
+    return len(confirmed) if confirmed else None
+
+
 def build_intake_snapshot(payload_json: dict[str, Any] | None) -> dict[str, Any]:
     """Derive flat canonical intake fields. Missing values stay absent — never invented."""
     if not payload_json or not isinstance(payload_json, dict):
@@ -118,6 +133,9 @@ def build_intake_snapshot(payload_json: dict[str, Any] | None) -> dict[str, Any]
         confirmed_groups = [row for row in group_list if isinstance(row, dict) and row.get("confirmed") is True]
         if confirmed_groups:
             letter_count = len(confirmed_groups)
+    if letter_count is None:
+        layer_setup = _get_dict(payload_json, "layer_role_setup")
+        letter_count = _count_confirmed_face_layers(layer_setup)
 
     mounting_system = finish.get("mounting_system")
     support_required: bool | None = None

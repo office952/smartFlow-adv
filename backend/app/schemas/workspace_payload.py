@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 PAYLOAD_SCHEMA_VERSION = "1.0.0"
 
 SvgUploadStatus = Literal["missing", "analyzed", "failed"]
-LayerSetupStatus = Literal["missing", "partial", "complete"]
+LayerSetupStatus = Literal["missing", "draft", "partial", "confirmed", "complete"]
 
 
 class WorkspaceClientPayload(BaseModel):
@@ -21,14 +21,29 @@ class WorkspaceClientPayload(BaseModel):
 
 class WorkspaceSvgSourcePayload(BaseModel):
     file_name: str | None = None
+    file_size_bytes: int | None = None
+    mime_type: str | None = None
     upload_status: SvgUploadStatus = "missing"
+    uploaded_at: str | None = None
+
+
+class WorkspaceLayerRoleMetricsPayload(BaseModel):
+    face_area_m2: float | None = None
+    perimeter_m: float | None = None
 
 
 class WorkspaceLayerRoleLayerPayload(BaseModel):
+    layer_id: str | None = None
     layer_key: str | None = None
     layer_name: str | None = None
+    source: str | None = None
+    suggested_role: str | None = None
     confirmed_role: str | None = None
+    confirmed: bool = False
+    ignored: bool = False
     confirmation_state: str | None = None
+    path_count: int | None = None
+    metrics: WorkspaceLayerRoleMetricsPayload | None = None
 
 
 class WorkspaceLayerRoleSetupPayload(BaseModel):
@@ -39,11 +54,14 @@ class WorkspaceLayerRoleSetupPayload(BaseModel):
 class WorkspaceLetterGroupFinishPayload(BaseModel):
     group_key: str | None = None
     layer_name: str | None = None
+    role: str | None = None
     face_area_m2: float | None = None
     perimeter_m: float | None = None
     face_finish_type: str | None = None
+    face_oracal_code: str | None = None
     return_finish_type: str | None = None
     return_depth_mm: float | None = None
+    face_vinyl_roll_width_mm: float | None = None
     confirmed: bool = False
 
 

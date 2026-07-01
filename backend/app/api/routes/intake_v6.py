@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from app.schemas.intake_v6 import (
     IntakeV6WorkspaceCreate,
     IntakeV6WorkspaceDetail,
+    IntakeV6WorkspacePayloadUpdate,
     IntakeV6WorkspaceSummary,
 )
 from app.schemas.quotes import (
@@ -35,6 +36,20 @@ async def get_workspace(workspace_id: str) -> IntakeV6WorkspaceDetail:
     if workspace is None:
         raise HTTPException(status_code=404, detail="Workspace not found")
     return workspace
+
+
+@router.patch("/workspaces/{workspace_id}/payload", response_model=IntakeV6WorkspaceDetail)
+async def update_workspace_payload(
+    workspace_id: str,
+    payload: IntakeV6WorkspacePayloadUpdate,
+) -> IntakeV6WorkspaceDetail:
+    workspace = workspace_store.get_workspace(workspace_id)
+    if workspace is None:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    updated = workspace_store.update_workspace_payload(workspace_id, payload.payload_json)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    return updated
 
 
 @router.get("/workspaces/{workspace_id}/owner-decisions", response_model=list[QuoteOwnerDecision])
