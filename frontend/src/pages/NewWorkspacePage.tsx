@@ -1,6 +1,8 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { Button } from "../components/ui/Button";
+import { PageHeader } from "../components/ui/PageHeader";
 import { WorkspaceCreateInput, createWorkspace } from "../lib/api";
 
 
@@ -51,10 +53,11 @@ export function NewWorkspacePage() {
 
   return (
     <section className="panel">
-      <div className="page-head">
-        <h2>New Intake V6 Workspace</h2>
-        <p>Capture the minimum geometry and commercial gating inputs, then let backend preview return blocked or ready state.</p>
-      </div>
+      <PageHeader
+        eyebrow="Intake"
+        title="New workspace"
+        description="Temporary manual intake form. Phase 2 will render fields from backend product systems."
+      />
 
       {error ? <div className="error-box">{error}</div> : null}
 
@@ -165,9 +168,9 @@ export function NewWorkspacePage() {
         </div>
 
         <div className="actions">
-          <button className="button" type="submit" disabled={saving}>
+          <Button type="submit" disabled={saving}>
             {saving ? "Creating..." : "Create workspace"}
-          </button>
+          </Button>
         </div>
       </form>
     </section>

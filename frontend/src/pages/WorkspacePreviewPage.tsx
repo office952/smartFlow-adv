@@ -11,6 +11,7 @@ import {
   updateLinePrice,
   updateOwnerDecision,
 } from "../lib/api";
+import { PageHeader } from "../components/ui/PageHeader";
 
 
 export function WorkspacePreviewPage() {
@@ -162,12 +163,11 @@ export function WorkspacePreviewPage() {
 
   return (
     <section className="panel">
-      <div className="page-head">
-        <h2>{workspace.title}</h2>
-        <p>
-          Client: {workspace.client_name}. Template: {workspace.template_code}. This screen only exposes real preview state returned by the backend.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Quote preview"
+        title={workspace.title}
+        description={`Client: ${workspace.client_name}. Template: ${workspace.template_code}. Status and totals come from backend preview only.`}
+      />
 
       {error ? <div className="error-box">{error}</div> : null}
       {quoteMessage ? <div className="note">{quoteMessage}</div> : null}

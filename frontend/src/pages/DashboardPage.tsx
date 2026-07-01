@@ -1,6 +1,10 @@
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { EmptyState } from "../components/ui/EmptyState";
+import { PageHeader } from "../components/ui/PageHeader";
+import { Section } from "../components/ui/Section";
 import { CommercialQuote, QuotePreview, WorkspaceSummary, listCommercialQuotes, listQuotePreviews, listWorkspaces } from "../lib/api";
 
 
@@ -42,10 +46,16 @@ export function DashboardPage() {
 
   return (
     <section className="panel">
-      <div className="page-head">
-        <h2>Dashboard</h2>
-        <p>Minimal V6 control room: draft workspaces, blocked previews, and owner-decision pressure points.</p>
-      </div>
+      <PageHeader
+        eyebrow="Overview"
+        title="Dashboard"
+        description="Workspace intake status, quote preview readiness, and backend-reported commercial records."
+        actions={
+          <Button as="link" to="/workspaces/new">
+            New workspace
+          </Button>
+        }
+      />
 
       <div className="stats">
         <article className="stat">
@@ -58,7 +68,7 @@ export function DashboardPage() {
         </article>
         <article className="stat">
           <span>Commercial policy</span>
-          <strong>No fake totals</strong>
+          <strong>Backend truth</strong>
         </article>
         <article className="stat">
           <span>Quotes</span>
@@ -69,10 +79,17 @@ export function DashboardPage() {
       {error ? <div className="error-box">{error}</div> : null}
 
       <div className="grid-two">
-        <div className="summary">
-          <span className="badge">Workspaces</span>
+        <Section title="Workspaces">
           {workspaces.length === 0 ? (
-            <div className="empty">No workspaces yet. Create the first V6 intake workspace.</div>
+            <EmptyState
+              title="No workspaces yet"
+              description="Create the first intake workspace. Future forms will be driven by product systems."
+              action={
+                <Button as="link" to="/workspaces/new" variant="secondary">
+                  Create workspace
+                </Button>
+              }
+            />
           ) : (
             <table className="table">
               <thead>
@@ -86,7 +103,9 @@ export function DashboardPage() {
                 {workspaces.map((workspace) => (
                   <tr key={workspace.id}>
                     <td>
-                      <Link to={`/workspaces/${workspace.id}`}>{workspace.title}</Link>
+                      <Button as="link" to={`/workspaces/${workspace.id}`} variant="ghost" className="table-link-button">
+                        {workspace.title}
+                      </Button>
                     </td>
                     <td>{workspace.client_name}</td>
                     <td>{workspace.status}</td>
@@ -95,49 +114,39 @@ export function DashboardPage() {
               </tbody>
             </table>
           )}
-        </div>
+        </Section>
 
-        <div className="summary">
-          <span className="badge">Last previews</span>
+        <Section title="Last previews">
           {previews.length === 0 ? (
-            <div className="empty">Preview history will appear after the first quote-preview request.</div>
+            <EmptyState title="No previews yet" description="Preview history appears after the first backend quote-preview request." />
           ) : (
             <div className="stack">
               {previews.slice(0, 5).map((preview) => (
-                <article key={preview.workspace_id} className="card">
-                  <span>{preview.client_name}</span>
-                  <strong>{preview.workspace_title}</strong>
+                <Card key={preview.workspace_id} eyebrow={preview.client_name} title={preview.workspace_title}>
                   <p>Status: {preview.status}</p>
                   <p>Blockers: {preview.blockers.length}</p>
-                </article>
+                </Card>
               ))}
             </div>
           )}
-        </div>
+        </Section>
 
-        <div className="summary">
-          <span className="badge">Commercial quotes</span>
+        <Section title="Commercial quotes">
           {quotes.length === 0 ? (
-            <div className="empty">No priced quotes yet. Create one from a ready preview.</div>
+            <EmptyState title="No priced quotes" description="Official quotes are created only from a ready backend preview." />
           ) : (
             <div className="stack">
               {quotes.slice(0, 5).map((quote) => (
-                <article key={quote.id} className="card">
-                  <span>{quote.client_name}</span>
-                  <strong>{quote.quote_code}</strong>
+                <Card key={quote.id} eyebrow={quote.client_name} title={quote.quote_code}>
                   <p>{quote.workspace_title}</p>
-                  <p>Total: {quote.total_gross} {quote.currency}</p>
-                </article>
+                  <p>
+                    Backend total: {quote.total_gross} {quote.currency}
+                  </p>
+                </Card>
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      <div className="actions">
-        <Link className="button" to="/workspaces/new">
-          Create workspace
-        </Link>
+        </Section>
       </div>
     </section>
   );

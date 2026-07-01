@@ -59,6 +59,7 @@ npm.cmd run dev
 - Product boundary: `docs/architecture/SMARTFLOW_ADV_PRODUCT_BOUNDARY.md`
 - Target spine: `docs/architecture/SMARTFLOW_ADV_TARGET_SPINE.md`
 - Systems foundation: `docs/architecture/SMARTFLOW_ADV_SYSTEMS_FOUNDATION.md`
+- UI foundation: `docs/architecture/SMARTFLOW_ADV_UI_FOUNDATION.md`
 - Implementation roadmap: `docs/architecture/SMARTFLOW_ADV_IMPLEMENTATION_ROADMAP.md`
 - Legacy archive audit: `docs/architecture/SMARTFLOW_ADV_LEGACY_ARCHIVE_AUDIT.md`
 - Clean start audit: `docs/worklog/2026-07-01_smartflow_adv_clean_start_audit.md`
