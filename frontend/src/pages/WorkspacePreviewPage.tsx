@@ -1,17 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import { OwnerDecisionsPanel } from "../components/quote-preview/OwnerDecisionsPanel";
+import { PreviewBlockersPanel } from "../components/quote-preview/PreviewBlockersPanel";
+import { QuotePreviewLineGroup } from "../components/quote-preview/QuotePreviewLineGroup";
+import { QuotePreviewSummary } from "../components/quote-preview/QuotePreviewSummary";
+import { PageHeader } from "../components/ui/PageHeader";
+import { Section } from "../components/ui/Section";
 import {
-  createCommercialQuoteFromPreview,
   QuoteOwnerDecision,
   QuotePreview,
   WorkspaceDetail,
   buildQuotePreview,
+  createCommercialQuoteFromPreview,
   getWorkspace,
   updateLinePrice,
   updateOwnerDecision,
 } from "../lib/api";
-import { PageHeader } from "../components/ui/PageHeader";
+import { collectUniqueBlockers, groupLinesByComponent } from "../lib/quotePreviewUtils";
 
 
 export function WorkspacePreviewPage() {
@@ -58,7 +64,17 @@ export function WorkspacePreviewPage() {
     };
   }, [workspaceId]);
 
-  async function handleBuildPreview() {
+  const lineGroups = useMemo(
+    () => (preview ? groupLinesByComponent(preview.lines) : []),
+    [preview],
+  );
+
+  const allBlockers = useMemo(
+    () => (preview ? collectUniqueBlockers(preview) : []),
+    [preview],
+  );
+
+  async function refreshPreview() {
     if (!workspaceId) {
       return;
     }
@@ -97,8 +113,7 @@ export function WorkspacePreviewPage() {
 
     try {
       await updateOwnerDecision(workspaceId, decision.code, payload);
-      const nextPreview = await buildQuotePreview(workspaceId);
-      setPreview(nextPreview);
+      await refreshPreview();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Owner decision update failed.");
     } finally {
@@ -106,30 +121,23 @@ export function WorkspacePreviewPage() {
     }
   }
 
-  async function handleLinePriceChange(lineCode: string, rawValue: string) {
+  async function handleRulePriceSave(ruleCode: string, unitPrice: number) {
     if (!workspaceId || !preview) {
       return;
     }
 
-    const value = Number(rawValue);
-    if (!Number.isFinite(value) || value < 0) {
-      setError("Line price must be a non-negative number.");
-      return;
-    }
-
-    setSavingPriceCode(lineCode);
+    setSavingPriceCode(ruleCode);
     setError(null);
     try {
-      await updateLinePrice(workspaceId, lineCode, {
-        line_code: lineCode,
-        unit_price: value,
-        currency: "RON",
+      await updateLinePrice(workspaceId, ruleCode, {
+        line_code: ruleCode,
+        unit_price: unitPrice,
+        currency: preview.currency,
         notes: null,
       });
-      const nextPreview = await buildQuotePreview(workspaceId);
-      setPreview(nextPreview);
+      await refreshPreview();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Line price update failed.");
+      setError(cause instanceof Error ? cause.message : "Owner price save failed.");
     } finally {
       setSavingPriceCode(null);
     }
@@ -166,15 +174,14 @@ export function WorkspacePreviewPage() {
       <PageHeader
         eyebrow="Quote preview"
         title={workspace.title}
-        description={`Client: ${workspace.client_name}. Template: ${workspace.template_code}. Status and totals come from backend preview only.`}
+        description={`Client: ${workspace.client_name}. Legacy template: ${workspace.template_code}. Preview status, blockers, and totals are backend-only.`}
       />
 
       {error ? <div className="error-box">{error}</div> : null}
       {quoteMessage ? <div className="note">{quoteMessage}</div> : null}
 
       <div className="grid-two">
-        <div className="summary">
-          <span className="badge">Workspace inputs</span>
+        <Section title="Workspace inputs" description="Read-only workspace envelope from intake API.">
           <table className="table">
             <tbody>
               <tr><th>Width</th><td>{workspace.width_mm} mm</td></tr>
@@ -183,185 +190,77 @@ export function WorkspacePreviewPage() {
               <tr><th>Perimeter</th><td>{workspace.letter_perimeter_m} m</td></tr>
               <tr><th>Face area</th><td>{workspace.letter_face_area_m2} m2</td></tr>
               <tr><th>Return depth</th><td>{workspace.return_depth_mm} mm</td></tr>
-              <tr><th>LED modules</th><td>{workspace.led_module_count ?? "-"}</td></tr>
-              <tr><th>Selected PSU watts</th><td>{workspace.selected_psu_watts ?? "-"}</td></tr>
+              <tr><th>LED modules</th><td>{workspace.led_module_count ?? "—"}</td></tr>
+              <tr><th>Selected PSU watts</th><td>{workspace.selected_psu_watts ?? "—"}</td></tr>
             </tbody>
           </table>
-        </div>
+        </Section>
 
         <div className="summary">
-          <span className="badge">Commercial status</span>
-          {preview ? (
+          {!preview ? (
             <>
-              <strong>{preview.status}</strong>
-              {preview.existing_quote_code ? <p>Existing quote: {preview.existing_quote_code}</p> : null}
-              {preview.template_code ? <p>Systems template: {preview.template_code}</p> : null}
-              {preview.provenance ? <p>Provenance: {preview.provenance}</p> : null}
-              <p>Subtotal net: {preview.subtotal_net ?? "blocked"}</p>
-              <p>VAT ({Math.round(preview.vat_rate * 100)}%): {preview.vat_amount ?? "blocked"}</p>
-              <p>Total gross: {preview.total_gross ?? "blocked"}</p>
-              <p>Owner decisions: {preview.owner_decisions.length}</p>
+              <span className="badge">Commercial preview</span>
+              <p>No preview generated yet. Build preview to load registry-driven commercial rules.</p>
+              <div className="actions">
+                <button className="button" type="button" onClick={() => void refreshPreview()} disabled={building}>
+                  {building ? "Building..." : "Build quote preview"}
+                </button>
+              </div>
             </>
           ) : (
-            <p>No preview generated yet.</p>
+            <QuotePreviewSummary
+              preview={preview}
+              building={building}
+              creatingQuote={creatingQuote}
+              onBuildPreview={() => void refreshPreview()}
+              onCreateQuote={() => void handleCreateQuote()}
+            />
           )}
-          <div className="actions">
-            <button className="button" type="button" onClick={handleBuildPreview} disabled={building}>
-              {building ? "Building..." : "Build quote preview"}
-            </button>
-            <button
-              className="button-secondary"
-              type="button"
-              onClick={handleCreateQuote}
-              disabled={creatingQuote || preview?.status !== "ready" || Boolean(preview?.existing_quote_code)}
-            >
-              {creatingQuote ? "Creating quote..." : preview?.existing_quote_code ? "Commercial quote already exists" : "Create commercial quote"}
-            </button>
-          </div>
         </div>
       </div>
 
       {preview ? (
         <div className="stack">
-          <div className="note">No fake totals: null totals remain null until owner-approved commercial rule data exists.</div>
-
-          <div className="summary">
-            <span className="badge">Owner decisions</span>
-            {preview.owner_decisions.length === 0 ? (
-              <p>No owner decisions pending.</p>
-            ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Decision</th>
-                    <th>Detail</th>
-                    <th>Line</th>
-                    <th>Status</th>
-                    <th>Value</th>
-                    <th>Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {preview.owner_decisions.map((decision) => (
-                    <tr key={decision.code}>
-                      <td>{decision.label}</td>
-                      <td>{decision.detail}</td>
-                      <td>{decision.line_code ?? "-"}</td>
-                      <td>
-                        <select
-                          value={decision.status}
-                          onChange={(event) => {
-                            void handleDecisionChange(decision, {
-                              status: event.target.value as QuoteOwnerDecision["status"],
-                            });
-                          }}
-                          disabled={savingDecisionCode === decision.code}
-                        >
-                          <option value="pending">pending</option>
-                          <option value="approved">approved</option>
-                          <option value="rejected">rejected</option>
-                        </select>
-                      </td>
-                      <td>
-                        {decision.selected_value ?? "-"}
-                      </td>
-                      <td>
-                        <input
-                          value={decision.resolution_notes ?? ""}
-                          placeholder="notes"
-                          onBlur={(event) => {
-                            void handleDecisionChange(decision, {
-                              resolution_notes: event.target.value || null,
-                            });
-                          }}
-                          disabled={savingDecisionCode === decision.code}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+          <div className="note">
+            Owner prices save with <code>rule_code</code> as the storage key. The UI never calculates line totals or preview readiness.
           </div>
 
-          <div className="summary">
-            <span className="badge">Blockers</span>
-            {preview.blockers.length === 0 ? (
-              <p>No blockers.</p>
-            ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Code</th>
-                    <th>Message</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {preview.blockers.map((blocker) => (
-                    <tr key={blocker.code}>
-                      <td>{blocker.code}</td>
-                      <td>{blocker.message}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+          <PreviewBlockersPanel blockers={allBlockers} />
 
-          <div className="summary">
-            <span className="badge">Commercial lines</span>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Rule</th>
-                  <th>Line</th>
-                  <th>Status</th>
-                  <th>Basis</th>
-                  <th>Quantity</th>
-                  <th>Unit price</th>
-                  <th>Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {preview.lines.map((line) => (
-                  <tr key={line.code}>
-                    <td>{line.rule_code ?? line.code}</td>
-                    <td>
-                      {line.label}
-                      {line.owner_decision_required ? <div><span className="badge">Owner decision</span></div> : null}
-                    </td>
-                    <td>{line.line_status ?? "blocked"}</td>
-                    <td>{line.basis_type}</td>
-                    <td>{line.quantity ?? "-"} {line.unit}</td>
-                    <td>
-                      <input
-                        type="number"
-                        step="0.01"
-                        defaultValue={line.commercial_unit_price ?? ""}
-                        placeholder="unset"
-                        onBlur={(event) => {
-                          if (event.target.value !== "") {
-                            void handleLinePriceChange(line.code, event.target.value);
-                          }
-                        }}
-                        disabled={line.owner_decision_required || savingPriceCode === line.code}
-                      />
-                    </td>
-                    <td>{line.subtotal ?? "blocked"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <OwnerDecisionsPanel
+            decisions={preview.owner_decisions}
+            savingDecisionCode={savingDecisionCode}
+            onDecisionChange={(decision, patch) => {
+              void handleDecisionChange(decision, patch);
+            }}
+          />
 
-          <div className="summary">
-            <span className="badge">Warnings</span>
-            <div className="stack">
-              {preview.warnings.map((warning) => (
-                <div key={warning} className="note">{warning}</div>
+          <Section
+            title="Commercial rules by component"
+            description="Grouped from backend preview lines — one card per commercial rule."
+          >
+            <div className="quote-line-groups">
+              {lineGroups.map((group) => (
+                <QuotePreviewLineGroup
+                  key={group.componentCode}
+                  group={group}
+                  currency={preview.currency}
+                  savingRuleCode={savingPriceCode}
+                  onSavePrice={handleRulePriceSave}
+                />
               ))}
             </div>
-          </div>
+          </Section>
+
+          {preview.warnings.length > 0 ? (
+            <Section title="Warnings" description="Backend preview warnings.">
+              <div className="stack">
+                {preview.warnings.map((warning) => (
+                  <div key={warning} className="note">{warning}</div>
+                ))}
+              </div>
+            </Section>
+          ) : null}
         </div>
       ) : null}
     </section>

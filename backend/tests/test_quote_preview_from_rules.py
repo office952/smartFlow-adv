@@ -144,6 +144,7 @@ def test_preview_uses_registry_rule_codes_not_old_catalog(temp_store: WorkspaceS
     assert line_codes.isdisjoint(OLD_HARDCODED_LINE_CODES)
     assert preview.provenance == PREVIEW_SOURCE
     assert all(line.source == PREVIEW_SOURCE for line in preview.lines)
+    assert all(line.component_display_name for line in preview.lines if line.component_code)
 
 
 def test_all_frontlit_commercial_rules_appear_as_lines(temp_store: WorkspaceStore) -> None:

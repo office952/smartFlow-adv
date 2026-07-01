@@ -19,6 +19,7 @@ class QuoteLine(BaseModel):
     owner_decision_required: bool = False
     rule_code: str | None = None
     component_code: str | None = None
+    component_display_name: str | None = None
     line_status: PreviewLineStatus = "blocked"
     currency: str = "RON"
     client_visible: bool = True

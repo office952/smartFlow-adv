@@ -52,8 +52,13 @@ export type QuoteLine = {
   owner_decision_required: boolean;
   rule_code?: string | null;
   component_code?: string | null;
+  component_display_name?: string | null;
   line_status?: "blocked" | "priced" | "included" | "manual_review" | "not_applicable";
+  currency?: string;
+  client_visible?: boolean;
   blockers?: QuoteBlocker[];
+  required_inputs?: string[];
+  required_owner_decisions?: string[];
   source?: string;
 };
 

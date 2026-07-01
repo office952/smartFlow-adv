@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.domain.systems.components import COMPONENTS
 from app.domain.systems.models import CommercialRuleDefinition, FORBIDDEN_COMMERCIAL_BASES
 from app.domain.systems.owner_decisions import OWNER_DECISIONS
 from app.domain.systems.registry_service import SystemsRegistryService, systems_registry
@@ -146,6 +147,7 @@ class QuotePreviewService:
                 code=rule.rule_code,
                 rule_code=rule.rule_code,
                 component_code=rule.component_code,
+                component_display_name=self._component_display_name(rule.component_code),
                 label=rule.display_name,
                 basis_type=basis_type_display(rule.commercial_basis),
                 line_status="not_applicable",
@@ -237,6 +239,7 @@ class QuotePreviewService:
             code=rule.rule_code,
             rule_code=rule.rule_code,
             component_code=rule.component_code,
+            component_display_name=self._component_display_name(rule.component_code),
             label=rule.display_name,
             basis_type=basis_type_display(basis),
             line_status=line_status,
@@ -251,6 +254,11 @@ class QuotePreviewService:
             source=PREVIEW_SOURCE,
             client_visible=rule.client_visible,
         )
+
+    @staticmethod
+    def _component_display_name(component_code: str) -> str | None:
+        component = COMPONENTS.get(component_code)
+        return component.display_name if component is not None else None
 
     def _is_not_applicable(self, rule: CommercialRuleDefinition, context: IntakeContext) -> bool:
         if rule.rule_code == "support_rule":

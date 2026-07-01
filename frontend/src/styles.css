@@ -329,6 +329,13 @@ body {
   border: 1px solid var(--sf-border);
 }
 
+.ui-section__description {
+  margin: 10px 0 0;
+  color: var(--sf-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
 .ui-section__body {
   margin-top: 14px;
 }
@@ -607,6 +614,215 @@ body {
 .note code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.85em;
+}
+
+/* Quote preview (Phase 3B) */
+
+.quote-preview-summary {
+  display: grid;
+  gap: 16px;
+}
+
+.quote-preview-summary__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quote-preview-summary__totals,
+.quote-preview-summary__context {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.quote-preview-summary__totals div,
+.quote-preview-summary__context div {
+  padding: 12px;
+  border-radius: var(--sf-radius-md);
+  background: var(--sf-surface);
+  border: 1px solid var(--sf-border);
+}
+
+.quote-preview-summary__totals dt,
+.quote-preview-summary__context dt {
+  font-size: 0.78rem;
+  color: var(--sf-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quote-preview-summary__totals dd,
+.quote-preview-summary__context dd {
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+
+.quote-blocker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.quote-blocker-item {
+  padding: 14px 16px;
+  border-radius: var(--sf-radius-md);
+  border: 1px solid var(--sf-border);
+  background: var(--sf-surface);
+}
+
+.quote-blocker-item__code {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.quote-blocker-item__message {
+  margin: 8px 0 0;
+}
+
+.quote-blocker-item__hint {
+  margin: 8px 0 0;
+  color: var(--sf-text-muted);
+  font-size: 0.92rem;
+}
+
+.quote-line-groups {
+  display: grid;
+  gap: 20px;
+}
+
+.quote-line-group {
+  border: 1px solid var(--sf-border);
+  border-radius: var(--sf-radius-lg);
+  background: var(--sf-surface);
+  padding: 16px;
+}
+
+.quote-line-group__header h3 {
+  margin: 0;
+}
+
+.quote-line-group__code {
+  margin: 6px 0 0;
+  color: var(--sf-text-muted);
+  font-size: 0.92rem;
+}
+
+.quote-line-group__cards {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.quote-line-card {
+  border: 1px solid var(--sf-border);
+  border-radius: var(--sf-radius-md);
+  background: var(--sf-surface-elevated);
+  padding: 14px;
+}
+
+.quote-line-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.quote-line-card__rule {
+  margin: 0;
+  color: var(--sf-text-muted);
+  font-size: 0.85rem;
+}
+
+.quote-line-card__label {
+  margin: 4px 0 0;
+}
+
+.quote-line-card__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.quote-line-card__meta dt {
+  font-size: 0.75rem;
+  color: var(--sf-text-muted);
+  text-transform: uppercase;
+}
+
+.quote-line-card__meta dd {
+  margin: 4px 0 0;
+}
+
+.quote-line-card__requirements,
+.quote-line-card__blockers {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+}
+
+.quote-line-card__blockers {
+  padding-left: 18px;
+}
+
+.quote-price-editor,
+.quote-price-readonly {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--sf-border);
+}
+
+.quote-price-editor__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+}
+
+.quote-price-editor__input {
+  width: 100%;
+  max-width: 220px;
+  padding: 10px 12px;
+  border-radius: var(--sf-radius-md);
+  border: 1px solid var(--sf-border-strong);
+  background: var(--sf-surface);
+  color: var(--sf-text);
+  font: inherit;
+}
+
+.quote-price-editor__key,
+.quote-price-editor__missing,
+.quote-price-editor__error,
+.quote-price-readonly__note {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+}
+
+.quote-price-editor__missing {
+  color: var(--sf-warning);
+}
+
+.quote-price-editor__error {
+  color: var(--sf-danger);
+}
+
+.quote-price-readonly__note {
+  color: var(--sf-text-muted);
+}
+
+.quote-decision-code {
+  margin-top: 4px;
+  font-size: 0.85rem;
+}
+
+.quote-decision-detail {
+  margin: 6px 0 0;
+  color: var(--sf-text-muted);
+  font-size: 0.9rem;
 }
 
 @media (max-width: 900px) {

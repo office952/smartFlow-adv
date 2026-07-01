@@ -103,7 +103,7 @@ Pages and legacy classes reference tokens — not hardcoded hex in page files.
 
 1. **Product Systems page** — `GET /api/v1/systems/product-templates`
 2. **Dynamic intake form** — `GET .../intake-fields` + `.../owner-decisions` via `SystemDrivenIntakeForm`
-3. **Quote preview page** — existing preview API; UI displays status/blockers/lines only
+3. **Quote preview page** — preview API; component-grouped rule cards; owner prices by `rule_code` (Phase 3B)
 4. **Offers page** — snapshot/export from frozen backend records
 
 Form fields will be **generated from registry schema**, replacing `NewWorkspacePage` hardcoded inputs.
@@ -124,7 +124,19 @@ frontend/src/styles.css          — tokens + layout + primitives
 
 ## Current limitations
 
-- `NewWorkspacePage` still uses temporary hardcoded form (Phase 2)
-- Product Systems / Offers nav items disabled
+- Phase 2B workspace payload schema still pending (legacy adapter + notes snapshot)
+- Offers nav item disabled
 - No frontend test suite yet — build verification only
 - Package name still `workos-vs-code-frontend` (rename later)
+
+### Quote preview components (Phase 3B)
+
+| Component | Path |
+|-----------|------|
+| QuotePreviewSummary | `components/quote-preview/QuotePreviewSummary.tsx` |
+| QuotePreviewLineGroup | `components/quote-preview/QuotePreviewLineGroup.tsx` |
+| QuotePreviewLineCard | `components/quote-preview/QuotePreviewLineCard.tsx` |
+| OwnerRulePriceEditor | `components/quote-preview/OwnerRulePriceEditor.tsx` |
+| PreviewBlockersPanel | `components/quote-preview/PreviewBlockersPanel.tsx` |
+| OwnerDecisionsPanel | `components/quote-preview/OwnerDecisionsPanel.tsx` |
+| Preview utils | `lib/quotePreviewUtils.ts` |

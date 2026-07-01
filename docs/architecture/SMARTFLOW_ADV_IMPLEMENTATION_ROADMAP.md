@@ -76,7 +76,22 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ---
 
-## Phase 4 — Official priced quote
+## Phase 3B — Owner price decision UI
+
+**Status:** Complete (2026-07-01)
+
+**Goal:** Rule-code-based owner price entry and blocker UX on quote preview page before Phase 4.
+
+| Deliverable | Description |
+|-------------|-------------|
+| Component-grouped preview lines | Cards per commercial rule, grouped by component |
+| Owner price by rule_code | Save via existing line-prices API keyed by rule_code |
+| Blocker panel | Backend blocker codes + non-business hints |
+| Preview context stats | Rule/line counts from response — no frontend totals math |
+
+**Next after 3B:** Phase 4 — Official priced quote (owner GO required).
+
+---
 
 **Goal:** Harden existing `POST /quotes/from-preview/{id}` flow under systems naming.
 
@@ -160,6 +175,7 @@ Phase 0  Baseline ────────────────────�
 Phase 1  Systems/registries ───────────────────────────────►
 Phase 2  Schema-driven intake form ────────────────────────►
 Phase 3  Rule-driven quote preview ────────────────────────►
+Phase 3B Owner price / blocker UI ───────────────────────►
 Phase 4  Official priced quote ────────────────────────────►
 Phase 5  Quote snapshot ───────────────────────────────────►
 Phase 6  Offer output ─────────────────────────────────────►

@@ -123,15 +123,15 @@ PASS
 
 ## Commit / push
 
-_(filled after commit)_
+**Commit:** `a7d273b` — Drive quote preview from smartflow commercial rules
 
 ---
 
 ## Recommended next slice
 
-**C — PHASE_3B_OWNER_PRICE_DECISION_UI**
+**Phase 3B — Owner Price Decision UI** (this slice). Phase 4 only after 3B live verification.
 
-Preview is registry-driven; owner price entry on preview page still uses generic inputs keyed by `rule_code` — improve UX to show registry labels and group by component. Alternatively **B — PHASE_2B** if workspace payload gaps block real workspaces.
+~~**C — PHASE_3B_OWNER_PRICE_DECISION_UI**~~ — superseded by Phase 3B implementation task.
 
 ---
 
