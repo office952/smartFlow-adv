@@ -109,6 +109,33 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ---
 
+## Phase 7A — AI Alignment Guardian (documentation now; implementation later)
+
+**Status:** Documentation complete (2026-07-01). **No AI implementation yet.**
+
+**Position:** After Phases 1–6 are stable enough to audit meaningfully, but **architecture and agent rules are documented now** so drift is caught early during Phase 3+ work.
+
+**Purpose:** AI-supported audit layer that reviews changes and detects broken connections before they become architectural drift.
+
+| Deliverable (future) | Description |
+|---------------------|-------------|
+| Guardian report automation | Emit standard report on significant diffs |
+| Contract cross-checks | Registry ↔ UI ↔ preview ↔ docs |
+| Scope drift alerts | smartHub, orders, ProductAggregate, etc. |
+| Pre/post implementation agent rule | Already documented in `SMARTFLOW_ADV_AI_ALIGNMENT_GUARDIAN.md` |
+
+**Explicitly not Phase 7A (now or later without approval):**
+
+- AI price calculation
+- AI quote writing or snapshot creation
+- OpenAI keys in repo
+- Chat UI as product feature
+- Replacing owner/operator confirmation
+
+**Reference:** `docs/architecture/SMARTFLOW_ADV_AI_ALIGNMENT_GUARDIAN.md`
+
+---
+
 ## Explicitly forbidden until later
 
 | Item | Product |
@@ -134,6 +161,7 @@ Phase 3  Rule-driven quote preview ───────────────
 Phase 4  Official priced quote ────────────────────────────►
 Phase 5  Quote snapshot ───────────────────────────────────►
 Phase 6  Offer output ─────────────────────────────────────►
+Phase 7A AI Alignment Guardian (docs now / tooling later) ─►
                               │
                               │ handoff (later)
                               ▼
