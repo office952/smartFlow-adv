@@ -71,7 +71,11 @@ Mounted at `/api/v1/systems`:
 
 ## Commit / push
 
-_(filled after commit)_
+| Item | Value |
+|------|-------|
+| Commit | `f752138366bcfcb8ffacd7c0144145af4a4bf96f` |
+| Message | Add smartflow systems registry foundation |
+| Push | SUCCESS → `origin/main` |
 
 ---
 
