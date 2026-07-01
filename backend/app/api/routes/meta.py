@@ -10,9 +10,10 @@ async def meta() -> dict[str, object]:
         "name": "workos-vs-code",
         "backend": "fastapi",
         "frontend": "react-vite",
-        "modules": ["intake-v6", "quote-preview", "quote-list"],
+        "modules": ["systems", "intake-v6", "quote-preview", "quote-list"],
         "policy": {
             "commercial_truth": "backend_authoritative",
             "fake_totals": False,
+            "systems_first": True,
         },
     }

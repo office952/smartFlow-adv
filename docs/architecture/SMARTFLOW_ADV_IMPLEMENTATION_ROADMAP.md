@@ -28,6 +28,8 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ## Phase 1 — Systems foundation
 
+**Status:** Complete (2026-07-01)
+
 **Goal:** Registries and contracts exist before any form or calculator rewrite.
 
 | Deliverable | Description |

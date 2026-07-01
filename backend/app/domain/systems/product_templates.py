@@ -1,0 +1,107 @@
+from app.domain.systems.models import ProductTemplate
+
+FRONTLIT_TEMPLATE = "volumetric_letters_frontlit"
+NON_LIT_TEMPLATE = "volumetric_letters_non_lit"
+FAMILY_CODE = "volumetric_letters"
+
+FRONTLIT_COMPONENT_CODES = [
+    "face",
+    "return_cant",
+    "back",
+    "led",
+    "psu",
+    "finish",
+    "support",
+    "mounting",
+    "packaging",
+]
+
+FRONTLIT_RULE_CODES = [
+    "face_area_rule",
+    "face_cut_rule",
+    "return_cant_rule",
+    "back_panel_rule",
+    "led_modules_rule",
+    "psu_rule",
+    "finish_rule",
+    "support_rule",
+    "mounting_rule",
+    "packaging_rule",
+]
+
+FRONTLIT_INTAKE_FIELD_CODES = [
+    "template_code",
+    "artwork_width_mm",
+    "artwork_height_mm",
+    "face_area_m2",
+    "back_area_m2",
+    "perimeter_ml",
+    "return_depth_mm",
+    "finish_area_m2",
+    "estimated_led_count",
+    "estimated_power_w",
+    "support_required",
+    "support_type",
+    "mounting_required",
+    "mounting_type",
+    "packaging_required",
+    "package_size_class",
+]
+
+FRONTLIT_OWNER_DECISION_CODES = [
+    "face_material",
+    "face_finish",
+    "return_material",
+    "return_finish",
+    "back_material",
+    "led_type",
+    "light_color",
+    "led_density_policy",
+    "psu_policy",
+    "finish_type",
+    "support_required_decision",
+    "support_type_decision",
+    "mounting_required_decision",
+    "mounting_type_decision",
+    "packaging_required_decision",
+    "delivery_policy",
+]
+
+PRODUCT_TEMPLATES: dict[str, ProductTemplate] = {
+    FRONTLIT_TEMPLATE: ProductTemplate(
+        template_code=FRONTLIT_TEMPLATE,
+        family_code=FAMILY_CODE,
+        display_name="Litere volumetrice luminoase frontlit",
+        description="Template complet pentru litere volumetrice iluminate frontlit.",
+        status="active",
+        component_codes=FRONTLIT_COMPONENT_CODES,
+        commercial_rule_codes=FRONTLIT_RULE_CODES,
+        intake_field_codes=FRONTLIT_INTAKE_FIELD_CODES,
+        owner_decision_codes=FRONTLIT_OWNER_DECISION_CODES,
+        operation_codes=[
+            "op_face_cut",
+            "op_return_form",
+            "op_back_panel",
+            "op_led_install",
+            "op_finish_apply",
+        ],
+        material_codes=[
+            "mat_face_acrylic",
+            "mat_return_aluminum",
+            "mat_back_pvc",
+            "mat_led_module",
+        ],
+    ),
+    NON_LIT_TEMPLATE: ProductTemplate(
+        template_code=NON_LIT_TEMPLATE,
+        family_code=FAMILY_CODE,
+        display_name="Litere volumetrice neluminoase",
+        description="Stub Phase 1 — componente si reguli comerciale vor fi definite in faza urmatoare.",
+        status="draft",
+        component_codes=[],
+        commercial_rule_codes=[],
+        intake_field_codes=["template_code", "artwork_width_mm", "artwork_height_mm"],
+        owner_decision_codes=[],
+        notes="Stub only for Phase 1. Do not use for quote preview yet.",
+    ),
+}

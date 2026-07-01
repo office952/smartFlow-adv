@@ -185,11 +185,59 @@ ProductTemplateRegistry ──► IntakeFieldRegistry
 
 ## Phase 1 deliverables (systems foundation)
 
-1. Registry module layout under `backend/app/registries/` (or `backend/app/systems/`) — **contracts + seed data only**
-2. `GET /api/v1/systems/templates` — list templates
-3. `GET /api/v1/systems/templates/{code}/intake-schema` — intake field schema
-4. `GET /api/v1/systems/templates/{code}/commercial-rules` — rule set metadata (not prices as fake defaults)
-5. Documentation-only JSON seed for volumetric letters — **no pricing constants presented as production truth**
+**Status: implemented (2026-07-01)**
+
+### Backend layout
+
+```
+backend/app/domain/systems/
+  models.py                 — Pydantic registry contracts
+  product_families.py       — seed: volumetric_letters
+  product_templates.py      — seed: frontlit + non_lit stub
+  components.py             — 9 frontlit components
+  materials.py              — minimal material catalog
+  operations.py             — fabrication operations (internal basis only)
+  commercial_rules.py       — 10 skeleton rules (no prices)
+  intake_fields.py          — 16 intake field definitions
+  owner_decisions.py        — 16 owner decision definitions
+  registry_service.py       — read-only SystemsRegistryService
+
+backend/app/api/routes/systems.py — read-only HTTP endpoints
+backend/tests/test_systems_registry.py — registry + API tests
+```
+
+### Read-only API (`/api/v1/systems`)
+
+| Method | Path |
+|--------|------|
+| GET | `/product-families` |
+| GET | `/product-families/{family_code}` |
+| GET | `/product-templates` |
+| GET | `/product-templates/{template_code}` |
+| GET | `/product-templates/{template_code}/components` |
+| GET | `/product-templates/{template_code}/commercial-rules` |
+| GET | `/product-templates/{template_code}/intake-fields` |
+| GET | `/product-templates/{template_code}/owner-decisions` |
+
+### Seed product data
+
+| Code | Status |
+|------|--------|
+| `volumetric_letters` | Active family |
+| `volumetric_letters_frontlit` | Full skeleton |
+| `volumetric_letters_non_lit` | Draft stub only |
+
+### Current limitations
+
+- In-memory static seed — no DB, no admin CRUD
+- No quote preview integration yet (`quote_preview_service.py` unchanged)
+- No dynamic frontend form yet
+- No unit prices in registry responses
+- `volumetric_letters_non_lit` has no components/rules
+
+### Next phase
+
+Phase 2 — Intake schema from systems: frontend consumes `GET .../intake-fields` and owner-decisions.
 
 **Explicitly not Phase 1:** dynamic form rendering, quote preview rewrite, quote write, snapshot, order.
 
