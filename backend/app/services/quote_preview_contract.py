@@ -27,7 +27,7 @@ NON_QUANTITY_BASES = frozenset(
     }
 )
 
-MP_QUANTITY_FIELDS = ("face_area_m2", "back_area_m2", "finish_area_m2")
+MP_QUANTITY_FIELDS = ("face_area_m2", "back_area_m2", "finish_area_m2", "mounting_template_area_m2")
 ML_QUANTITY_FIELDS = ("perimeter_ml", "cut_length_ml")
 BUC_QUANTITY_FIELDS = ("estimated_led_count", "estimated_power_w", "letter_count")
 

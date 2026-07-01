@@ -112,6 +112,16 @@ export function IntakeFieldRenderer({ field, value, onChange, disabled }: Intake
         </label>
       );
 
+    case "collection":
+      return (
+        <div className="field full collection-field-placeholder">
+          <span className="field-label-row">{field.label}</span>
+          <small className="field-hint">
+            {field.notes ?? "Collection field — stored in payload_json; dedicated UI arrives in Phase 2C/2D."}
+          </small>
+        </div>
+      );
+
     case "string":
     default:
       return (

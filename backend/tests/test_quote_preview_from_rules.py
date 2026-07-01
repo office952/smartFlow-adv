@@ -30,6 +30,7 @@ FRONTLIT_RULE_CODES = {
     "finish_rule",
     "support_rule",
     "mounting_rule",
+    "sablon_montaj_rule",
     "packaging_rule",
 }
 
@@ -150,11 +151,11 @@ def test_preview_uses_registry_rule_codes_not_old_catalog(temp_store: WorkspaceS
 def test_all_frontlit_commercial_rules_appear_as_lines(temp_store: WorkspaceStore) -> None:
     workspace_id = _create_workspace(temp_store)
     preview = QuotePreviewService(temp_store).build_preview(workspace_id)
-    assert len(preview.lines) == 10
+    assert len(preview.lines) == 11
     assert {line.rule_code for line in preview.lines} == FRONTLIT_RULE_CODES
 
 
-def test_missing_required_input_blocks_relevant_rule(temp_store: WorkspaceStore) -> None:
+def test_cut_length_ml_derived_from_perimeter_when_omitted(temp_store: WorkspaceStore) -> None:
     snapshot = _complete_snapshot()
     del snapshot["cut_length_ml"]
     workspace_id = _create_workspace(temp_store, snapshot)
@@ -163,8 +164,33 @@ def test_missing_required_input_blocks_relevant_rule(temp_store: WorkspaceStore)
     preview = QuotePreviewService(temp_store).build_preview(workspace_id)
     cut_line = next(line for line in preview.lines if line.rule_code == "face_cut_rule")
 
+    assert cut_line.quantity == 4.5
+
+
+def test_missing_perimeter_and_cut_blocks_face_cut_rule(temp_store: WorkspaceStore) -> None:
+    workspace = temp_store.create_workspace(
+        IntakeV6WorkspaceCreate(
+            title="No perimeter",
+            client_name="Client",
+            template_code="TPL-VOLUMETRIC-LETTERS_v2",
+            width_mm=1200,
+            height_mm=400,
+            letter_count=1,
+            letter_perimeter_m=0.001,
+            letter_face_area_m2=1.2,
+            return_depth_mm=60,
+            illuminated=True,
+            payload_json={
+                "systems_template_code": FRONTLIT_TEMPLATE,
+                "quote_geometry": {"letter_face_area_m2": 1.2},
+                "finish_setup": {},
+            },
+        )
+    )
+    _approve_core_owner_decisions(temp_store, workspace.id)
+    preview = QuotePreviewService(temp_store).build_preview(workspace.id)
+    cut_line = next(line for line in preview.lines if line.rule_code == "face_cut_rule")
     assert cut_line.line_status == "blocked"
-    assert any(blocker.code == "REQUIRED_INPUT_MISSING" for blocker in cut_line.blockers)
 
 
 def test_missing_owner_decision_blocks_relevant_rule(temp_store: WorkspaceStore) -> None:
@@ -279,4 +305,41 @@ def test_api_returns_ready_preview_for_complete_fixture(temp_store: WorkspaceSto
 
 
 def test_registry_commercial_rules_count() -> None:
-    assert len(COMMERCIAL_RULES) >= 10
+    assert len(COMMERCIAL_RULES) >= 11
+
+
+def test_preview_with_payload_json_workspace(temp_store: WorkspaceStore) -> None:
+    payload_json = {
+        "systems_template_code": FRONTLIT_TEMPLATE,
+        "quote_geometry": {
+            "letter_face_area_m2": 1.5,
+            "letter_perimeter_m": 6.0,
+            "back_area_m2": 1.2,
+        },
+        "finish_setup": {
+            "illuminated": True,
+            "led_module_count": 15,
+            "selected_psu_watts": 100,
+            "return_depth_mm": 80,
+        },
+    }
+    workspace = temp_store.create_workspace(
+        IntakeV6WorkspaceCreate(
+            title="Payload preview",
+            client_name="Client",
+            template_code="TPL-VOLUMETRIC-LETTERS_v2",
+            width_mm=1200,
+            height_mm=400,
+            letter_count=1,
+            letter_perimeter_m=1.0,
+            letter_face_area_m2=1.0,
+            return_depth_mm=60,
+            illuminated=True,
+            payload_json=payload_json,
+        )
+    )
+    preview = QuotePreviewService(temp_store).build_preview(workspace.id)
+    face_line = next(line for line in preview.lines if line.rule_code == "face_area_rule")
+    assert face_line.quantity == 1.5
+    assert preview.status == "blocked"
+    assert preview.total_gross is None

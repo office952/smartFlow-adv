@@ -13,7 +13,7 @@ export type CommercialBasis =
 
 export type BlockingBehavior = "blocking_if_missing" | "manual_owner_review" | "non_blocking";
 
-export type FieldType = "string" | "number" | "integer" | "boolean" | "enum" | "text";
+export type FieldType = "string" | "number" | "integer" | "boolean" | "enum" | "text" | "collection";
 
 export type FieldSource = "user_input" | "computed" | "owner_decision" | "system_default";
 

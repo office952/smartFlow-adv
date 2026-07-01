@@ -267,6 +267,12 @@ class QuotePreviewService:
             return not is_truthy(context.get("mounting_required"))
         if rule.rule_code == "packaging_rule":
             return not is_truthy(context.get("packaging_required"))
+        if rule.rule_code == "sablon_montaj_rule":
+            return not is_truthy(context.get("mounting_required"))
+        if rule.rule_code == "led_modules_rule":
+            illuminated = context.get("illuminated")
+            if illuminated is not None and not is_truthy(illuminated):
+                return True
         return False
 
     def _is_included(self, rule: CommercialRuleDefinition, context: IntakeContext) -> bool:

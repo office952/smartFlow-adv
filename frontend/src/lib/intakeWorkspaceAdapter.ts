@@ -1,6 +1,6 @@
 import type { IntakeFieldDefinition, OwnerDecisionDefinition, SystemIntakeFormValues, WorkspaceMetaValues } from "../types/systems";
 import type { WorkspaceCreateInput } from "./api";
-
+import { buildLegacyFlatFallbackFromPayload, buildWorkspacePayloadJson } from "./intakePayloadBuilder";
 
 /** Maps systems template codes to legacy intake-v6 workspace API template_code values. */
 const LEGACY_TEMPLATE_CODE_MAP: Record<string, string> = {
@@ -63,19 +63,19 @@ function readStringOrNull(values: SystemIntakeFormValues, key: string): string |
 }
 
 /**
- * Temporary compatibility adapter: systems registry field codes -> flat legacy workspace create payload.
- * Remove when backend accepts system_payload directly (Phase 2B).
+ * Phase 2B adapter: systems registry values → payload_json + compatibility flat create payload.
  */
 export function adaptSystemIntakeToWorkspaceCreate(
   templateCode: string,
   meta: WorkspaceMetaValues,
   values: SystemIntakeFormValues,
   intakeFields: IntakeFieldDefinition[],
+  ownerDecisionValues: Record<string, string> = {},
 ): AdaptResult {
   const issues: string[] = [];
 
   if (!canAdaptTemplateToLegacyWorkspace(templateCode)) {
-    return { ok: false, issues: [`Template "${templateCode}" is not yet supported by the legacy workspace API.`] };
+    return { ok: false, issues: [`Template "${templateCode}" is not yet supported by the workspace API.`] };
   }
 
   if (meta.title.trim().length < 3) {
@@ -86,7 +86,7 @@ export function adaptSystemIntakeToWorkspaceCreate(
   }
 
   for (const field of intakeFields) {
-    if (field.field_code === "template_code") {
+    if (field.field_code === "template_code" || field.field_type === "collection" || field.source === "computed") {
       continue;
     }
     if (!field.required) {
@@ -108,35 +108,34 @@ export function adaptSystemIntakeToWorkspaceCreate(
     return { ok: false, issues };
   }
 
+  const payloadJson = buildWorkspacePayloadJson(templateCode, meta, values, ownerDecisionValues);
+  const flat = buildLegacyFlatFallbackFromPayload(payloadJson);
+
   const payload: WorkspaceCreateInput = {
     title: meta.title.trim(),
     client_name: meta.client_name.trim(),
     template_code: LEGACY_TEMPLATE_CODE_MAP[templateCode],
-    width_mm: width!,
-    height_mm: height!,
-    letter_count: 1,
-    letter_perimeter_m: perimeter!,
-    letter_face_area_m2: faceArea!,
-    return_depth_mm: returnDepth!,
-    illuminated: templateCode === "volumetric_letters_frontlit",
-    led_module_count: readOptionalInt(values, "estimated_led_count"),
-    selected_psu_watts: readOptionalInt(values, "estimated_power_w"),
-    mounting_template_enabled: readBoolean(values, "mounting_required"),
-    mounting_template_area_m2: null,
-    mounting_template_material_type: readStringOrNull(values, "mounting_type"),
-    notes: buildSystemIntakeNotes(templateCode, values),
+    width_mm: flat.width_mm,
+    height_mm: flat.height_mm,
+    letter_count: flat.letter_count,
+    letter_perimeter_m: flat.letter_perimeter_m,
+    letter_face_area_m2: flat.letter_face_area_m2,
+    return_depth_mm: flat.return_depth_mm,
+    illuminated: flat.illuminated,
+    led_module_count: flat.led_module_count,
+    selected_psu_watts: flat.selected_psu_watts,
+    mounting_template_enabled: flat.mounting_template_enabled,
+    mounting_template_area_m2: flat.mounting_template_area_m2,
+    mounting_template_material_type: flat.mounting_template_material_type,
+    notes: buildCompatibilityNotes(templateCode),
+    payload_json: payloadJson,
   };
 
   return { ok: true, payload };
 }
 
-function buildSystemIntakeNotes(templateCode: string, values: SystemIntakeFormValues): string {
-  const snapshot = {
-    systems_template_code: templateCode,
-    intake_snapshot: values,
-    adapter: "phase2_legacy_flat_map",
-  };
-  return `System-driven intake snapshot:\n${JSON.stringify(snapshot, null, 2)}`;
+function buildCompatibilityNotes(templateCode: string): string {
+  return `Phase 2B payload_json workspace (${templateCode}) — notes retained for legacy tooling only.`;
 }
 
 export function validateOwnerDecisions(

@@ -11,6 +11,8 @@ from app.schemas.intake_v6 import (
     IntakeV6WorkspaceDetail,
     IntakeV6WorkspaceSummary,
 )
+from app.schemas.workspace_payload import parse_workspace_payload
+from app.services.intake_snapshot_builder import build_intake_snapshot
 from app.schemas.quotes import (
     CommercialQuoteRecord,
     QuoteLinePrice,
@@ -126,9 +128,75 @@ class WorkspaceStore:
                 """
             )
             connection.commit()
+            self._ensure_payload_json_column(connection)
+
+    def _ensure_payload_json_column(self, connection: sqlite3.Connection) -> None:
+        columns = {
+            row[1]
+            for row in connection.execute("PRAGMA table_info(workspaces)").fetchall()
+        }
+        if "payload_json" not in columns:
+            connection.execute("ALTER TABLE workspaces ADD COLUMN payload_json TEXT")
+            connection.commit()
+
+    @staticmethod
+    def _parse_payload_json(raw: str | None) -> dict | None:
+        if not raw:
+            return None
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            return None
+        if not isinstance(parsed, dict):
+            return None
+        return parse_workspace_payload(parsed)
+
+    @staticmethod
+    def _apply_snapshot_to_flat(snapshot: dict, payload: IntakeV6WorkspaceCreate) -> IntakeV6WorkspaceCreate:
+        """Sync denormalized flat columns from derived snapshot when payload_json is primary truth."""
+        data = payload.model_dump()
+        width = snapshot.get("artwork_width_mm")
+        if width is not None:
+            data["width_mm"] = float(width)
+        height = snapshot.get("artwork_height_mm")
+        if height is not None:
+            data["height_mm"] = float(height)
+        letter_count = snapshot.get("letter_count")
+        if letter_count is not None:
+            data["letter_count"] = int(letter_count)
+        perimeter = snapshot.get("perimeter_ml")
+        if perimeter is not None:
+            data["letter_perimeter_m"] = float(perimeter)
+        face_area = snapshot.get("face_area_m2")
+        if face_area is not None:
+            data["letter_face_area_m2"] = float(face_area)
+        return_depth = snapshot.get("return_depth_mm")
+        if return_depth is not None:
+            data["return_depth_mm"] = float(return_depth)
+        if snapshot.get("illuminated") is not None:
+            data["illuminated"] = bool(snapshot.get("illuminated"))
+        led_count = snapshot.get("estimated_led_count")
+        if led_count is not None:
+            data["led_module_count"] = int(led_count)
+        power = snapshot.get("estimated_power_w")
+        if power is not None:
+            data["selected_psu_watts"] = int(power)
+        if snapshot.get("mounting_required") is not None:
+            data["mounting_template_enabled"] = bool(snapshot.get("mounting_required"))
+        area = snapshot.get("mounting_template_area_m2")
+        if area is not None:
+            data["mounting_template_area_m2"] = float(area)
+        mounting_type = snapshot.get("mounting_type")
+        if mounting_type is not None:
+            data["mounting_template_material_type"] = str(mounting_type)
+        return IntakeV6WorkspaceCreate.model_validate(data)
 
     @staticmethod
     def _workspace_from_row(row: sqlite3.Row) -> IntakeV6WorkspaceDetail:
+        payload_json = WorkspaceStore._parse_payload_json(row["payload_json"] if "payload_json" in row.keys() else None)
+        intake_snapshot = build_intake_snapshot(payload_json) if payload_json else None
+        if intake_snapshot == {}:
+            intake_snapshot = None
         return IntakeV6WorkspaceDetail(
             id=row["id"],
             title=row["title"],
@@ -148,30 +216,46 @@ class WorkspaceStore:
             mounting_template_area_m2=row["mounting_template_area_m2"],
             mounting_template_material_type=row["mounting_template_material_type"],
             notes=row["notes"],
+            payload_json=payload_json,
+            intake_snapshot=intake_snapshot,
         )
 
     def create_workspace(self, payload: IntakeV6WorkspaceCreate) -> IntakeV6WorkspaceDetail:
         workspace_id = str(uuid4())
+        payload_json = parse_workspace_payload(payload.payload_json) if payload.payload_json else None
+
+        create_payload = payload
+        if payload_json:
+            snapshot = build_intake_snapshot(payload_json)
+            create_payload = self._apply_snapshot_to_flat(snapshot, payload)
+
         workspace = IntakeV6WorkspaceDetail(
             id=workspace_id,
-            title=payload.title,
-            client_name=payload.client_name,
-            template_code=payload.template_code,
+            title=create_payload.title,
+            client_name=create_payload.client_name,
+            template_code=create_payload.template_code,
             status="draft",
-            width_mm=payload.width_mm,
-            height_mm=payload.height_mm,
-            letter_count=payload.letter_count,
-            letter_perimeter_m=payload.letter_perimeter_m,
-            letter_face_area_m2=payload.letter_face_area_m2,
-            return_depth_mm=payload.return_depth_mm,
-            illuminated=payload.illuminated,
-            led_module_count=payload.led_module_count,
-            selected_psu_watts=payload.selected_psu_watts,
-            mounting_template_enabled=payload.mounting_template_enabled,
-            mounting_template_area_m2=payload.mounting_template_area_m2,
-            mounting_template_material_type=payload.mounting_template_material_type,
-            notes=payload.notes,
+            width_mm=create_payload.width_mm,
+            height_mm=create_payload.height_mm,
+            letter_count=create_payload.letter_count,
+            letter_perimeter_m=create_payload.letter_perimeter_m,
+            letter_face_area_m2=create_payload.letter_face_area_m2,
+            return_depth_mm=create_payload.return_depth_mm,
+            illuminated=create_payload.illuminated,
+            led_module_count=create_payload.led_module_count,
+            selected_psu_watts=create_payload.selected_psu_watts,
+            mounting_template_enabled=create_payload.mounting_template_enabled,
+            mounting_template_area_m2=create_payload.mounting_template_area_m2,
+            mounting_template_material_type=create_payload.mounting_template_material_type,
+            notes=create_payload.notes,
+            payload_json=payload_json,
+            intake_snapshot=build_intake_snapshot(payload_json) if payload_json else None,
         )
+        if workspace.intake_snapshot == {}:
+            workspace.intake_snapshot = None
+
+        payload_json_text = json.dumps(payload_json) if payload_json else None
+
         with self._connect() as connection:
             connection.execute(
                 """
@@ -179,8 +263,9 @@ class WorkspaceStore:
                     id, title, client_name, template_code, status,
                     width_mm, height_mm, letter_count, letter_perimeter_m, letter_face_area_m2,
                     return_depth_mm, illuminated, led_module_count, selected_psu_watts,
-                    mounting_template_enabled, mounting_template_area_m2, mounting_template_material_type, notes
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    mounting_template_enabled, mounting_template_area_m2, mounting_template_material_type,
+                    notes, payload_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     workspace.id,
@@ -201,6 +286,7 @@ class WorkspaceStore:
                     workspace.mounting_template_area_m2,
                     workspace.mounting_template_material_type,
                     workspace.notes,
+                    payload_json_text,
                 ),
             )
             connection.commit()

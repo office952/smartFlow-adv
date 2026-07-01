@@ -143,7 +143,9 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
     [templates, templateCode],
   );
 
-  const visibleIntakeFields = intakeFields.filter((field) => field.field_code !== "template_code");
+  const visibleIntakeFields = intakeFields.filter(
+    (field) => field.field_code !== "template_code" && field.source !== "computed",
+  );
 
   function updateIntakeValue(fieldCode: string, value: string | number | boolean | null) {
     setIntakeValues((current) => ({ ...current, [fieldCode]: value }));

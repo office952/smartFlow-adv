@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -20,6 +22,7 @@ class IntakeV6WorkspaceCreate(BaseModel):
     mounting_template_area_m2: float | None = Field(default=None, ge=0)
     mounting_template_material_type: str | None = None
     notes: str | None = None
+    payload_json: dict[str, Any] | None = None
 
 
 class IntakeV6WorkspaceSummary(BaseModel):
@@ -44,3 +47,5 @@ class IntakeV6WorkspaceDetail(IntakeV6WorkspaceSummary):
     mounting_template_area_m2: float | None = None
     mounting_template_material_type: str | None = None
     notes: str | None = None
+    payload_json: dict[str, Any] | None = None
+    intake_snapshot: dict[str, Any] | None = None

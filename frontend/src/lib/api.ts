@@ -20,6 +20,8 @@ export type WorkspaceDetail = WorkspaceSummary & {
   mounting_template_area_m2: number | null;
   mounting_template_material_type: string | null;
   notes: string | null;
+  payload_json?: Record<string, unknown> | null;
+  intake_snapshot?: Record<string, unknown> | null;
 };
 
 export type WorkspaceCreateInput = {
@@ -39,6 +41,7 @@ export type WorkspaceCreateInput = {
   mounting_template_area_m2: number | null;
   mounting_template_material_type: string | null;
   notes: string | null;
+  payload_json?: Record<string, unknown> | null;
 };
 
 export type QuoteLine = {

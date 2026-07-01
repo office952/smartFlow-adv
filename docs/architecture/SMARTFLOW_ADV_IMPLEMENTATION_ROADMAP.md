@@ -59,6 +59,34 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ---
 
+## Phase 2B — Payload JSON + intake snapshot resolver
+
+**Status:** Complete (2026-07-01)
+
+**Goal:** Workspace truth in structured `payload_json`; canonical flat `intake_snapshot` derived for quote preview.
+
+| Deliverable | Description |
+|-------------|-------------|
+| `payload_json` schema + storage | SQLite column; create/read API |
+| `build_intake_snapshot()` | Derive flat fields from payload — no fake values |
+| Resolver priority | payload_json → cache → notes hack → flat columns |
+| Frontend payload builder | Form submits `payload_json` envelope |
+| Mapping doc | `SMARTFLOW_LEGACY_PAYLOAD_MAPPING.md` |
+
+**Forbidden:** Official quote, snapshot, order; SVG/layer UI (deferred to 2C).
+
+---
+
+## Phase 2C — Artwork / SVG / layer roles (next)
+
+**Status:** Not started
+
+**Goal:** Populate `svg_source`, `layer_role_setup`, `letter_group_finishes` in payload from operator UX.
+
+**Depends on:** Phase 2B payload base.
+
+---
+
 ## Phase 3 — Quote preview from rules
 
 **Status:** Complete (2026-07-01)
@@ -89,9 +117,13 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 | Blocker panel | Backend blocker codes + non-business hints |
 | Preview context stats | Rule/line counts from response — no frontend totals math |
 
-**Next after 3B:** Phase 4 — Official priced quote (owner GO required).
+**Next after 3B:** Phase 2B payload_json (complete) → Phase 2C SVG/layers → Phase 4 official priced quote (owner GO required).
 
 ---
+
+## Phase 4 — Official priced quote
+
+**Status:** Not started — blocked until payload + artwork/review stable enough.
 
 **Goal:** Harden existing `POST /quotes/from-preview/{id}` flow under systems naming.
 
@@ -174,6 +206,8 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 Phase 0  Baseline ─────────────────────────────────────────►
 Phase 1  Systems/registries ───────────────────────────────►
 Phase 2  Schema-driven intake form ────────────────────────►
+Phase 2B payload_json + intake snapshot ─────────────────►
+Phase 2C SVG / layer roles / letter groups ──────────────►
 Phase 3  Rule-driven quote preview ────────────────────────►
 Phase 3B Owner price / blocker UI ───────────────────────►
 Phase 4  Official priced quote ────────────────────────────►

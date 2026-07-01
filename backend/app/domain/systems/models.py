@@ -32,6 +32,7 @@ FieldType = Literal[
     "boolean",
     "enum",
     "text",
+    "collection",
 ]
 
 FieldSource = Literal["user_input", "computed", "owner_decision", "system_default"]

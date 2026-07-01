@@ -26,6 +26,7 @@ FRONTLIT_RULE_CODES = [
     "finish_rule",
     "support_rule",
     "mounting_rule",
+    "sablon_montaj_rule",
     "packaging_rule",
 ]
 
@@ -38,14 +39,23 @@ FRONTLIT_INTAKE_FIELD_CODES = [
     "perimeter_ml",
     "return_depth_mm",
     "finish_area_m2",
+    "letter_count",
+    "cut_length_ml",
     "estimated_led_count",
     "estimated_power_w",
+    "illuminated",
+    "lighting_system_type",
     "support_required",
     "support_type",
     "mounting_required",
     "mounting_type",
+    "mounting_template_area_m2",
     "packaging_required",
     "package_size_class",
+    "letter_groups_confirmed",
+    "artwork_confirmed",
+    "letter_group_finishes",
+    "artwork_finishes",
 ]
 
 FRONTLIT_OWNER_DECISION_CODES = [
@@ -65,6 +75,10 @@ FRONTLIT_OWNER_DECISION_CODES = [
     "mounting_type_decision",
     "packaging_required_decision",
     "delivery_policy",
+    "back_cut_basis",
+    "forex_template_price",
+    "packaging_commercial",
+    "site_mount_commercial",
 ]
 
 PRODUCT_TEMPLATES: dict[str, ProductTemplate] = {

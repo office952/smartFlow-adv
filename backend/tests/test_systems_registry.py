@@ -39,10 +39,11 @@ def test_frontlit_has_expected_components() -> None:
 
 def test_frontlit_commercial_rules_exist() -> None:
     rules = systems_registry.list_commercial_rules_for_template(FRONTLIT_TEMPLATE)
-    assert len(rules) == 10
+    assert len(rules) == 11
     rule_codes = {rule.rule_code for rule in rules}
     assert "support_rule" in rule_codes
     assert "mounting_rule" in rule_codes
+    assert "sablon_montaj_rule" in rule_codes
 
 
 def test_no_forbidden_commercial_basis() -> None:
@@ -66,7 +67,7 @@ def test_frontlit_intake_fields_listed() -> None:
     assert "artwork_width_mm" in codes
     assert "face_area_m2" in codes
     assert "mounting_required" in codes
-    assert len(codes) >= 16
+    assert len(codes) >= 24
 
 
 def test_frontlit_owner_decisions_listed() -> None:
@@ -74,7 +75,7 @@ def test_frontlit_owner_decisions_listed() -> None:
     codes = {decision.decision_code for decision in decisions}
     assert "face_material" in codes
     assert "mounting_type_decision" in codes
-    assert len(codes) >= 10
+    assert len(codes) >= 18
 
 
 @pytest.mark.parametrize(
