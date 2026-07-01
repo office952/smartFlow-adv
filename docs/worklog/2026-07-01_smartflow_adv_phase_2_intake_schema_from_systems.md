@@ -105,7 +105,8 @@ Backend unchanged — no backend tests run.
 
 ## Commit / push
 
-_(filled after commit)_
+**Commit:** `9e43dd0` — Drive intake form from smartflow systems schema  
+**Remaining gap before Phase 3:** `quote_preview_service.py` hardcoded line catalog (addressed in Phase 3).
 
 ---
 

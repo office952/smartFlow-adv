@@ -61,6 +61,8 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ## Phase 3 — Quote preview from rules
 
+**Status:** Complete (2026-07-01)
+
 **Goal:** `QuotePreviewService` reads CommercialRuleRegistry + OwnerDecisionRegistry — not hardcoded line arrays.
 
 | Deliverable | Description |

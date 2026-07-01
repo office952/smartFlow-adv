@@ -230,18 +230,18 @@ backend/tests/test_systems_registry.py — registry + API tests
 ### Current limitations
 
 - In-memory static seed — no DB, no admin CRUD
-- No quote preview integration yet (`quote_preview_service.py` unchanged)
-- No dynamic frontend form yet
-- No unit prices in registry responses
+- Quote preview reads CommercialRuleRegistry (Phase 3 complete); workspace payload still uses legacy flat columns + intake snapshot notes (Phase 2B)
+- No unit prices in registry responses — owner line prices keyed by `rule_code`
 - `volumetric_letters_non_lit` has no components/rules
 
-### Next phase
+### Phase status
 
-Phase 2 — Intake schema from systems: **complete (2026-07-01)** — see worklog.
+| Phase | Status |
+|-------|--------|
+| Phase 2 — Intake schema from systems | Complete (2026-07-01) |
+| Phase 3 — Quote preview from rules | Complete (2026-07-01) — see worklog |
 
-Phase 3 — Quote preview from rules: `QuotePreviewService` reads CommercialRuleRegistry.
-
-**Explicitly not Phase 1:** dynamic form rendering, quote preview rewrite, quote write, snapshot, order.
+**Explicitly not in scope yet:** quote write hardening (Phase 4), snapshot, order.
 
 ---
 

@@ -5,6 +5,9 @@ from typing import Literal
 from pydantic import BaseModel
 
 
+PreviewLineStatus = Literal["blocked", "priced", "included", "manual_review", "not_applicable"]
+
+
 class QuoteLine(BaseModel):
     code: str
     label: str
@@ -14,6 +17,15 @@ class QuoteLine(BaseModel):
     commercial_unit_price: float | None = None
     subtotal: float | None = None
     owner_decision_required: bool = False
+    rule_code: str | None = None
+    component_code: str | None = None
+    line_status: PreviewLineStatus = "blocked"
+    currency: str = "RON"
+    client_visible: bool = True
+    blockers: list["QuoteBlocker"] = []
+    required_inputs: list[str] = []
+    required_owner_decisions: list[str] = []
+    source: str = "commercial_rule_registry"
 
 
 class QuoteBlocker(BaseModel):
@@ -59,6 +71,7 @@ class QuotePreviewResponse(BaseModel):
     workspace_id: str
     workspace_title: str
     client_name: str
+    template_code: str | None = None
     status: str
     existing_quote_id: str | None = None
     existing_quote_code: str | None = None
@@ -71,6 +84,7 @@ class QuotePreviewResponse(BaseModel):
     blockers: list[QuoteBlocker]
     owner_decisions: list[QuoteOwnerDecision]
     warnings: list[str]
+    provenance: str = "commercial_rule_registry"
 
 
 class CommercialQuoteRecord(BaseModel):

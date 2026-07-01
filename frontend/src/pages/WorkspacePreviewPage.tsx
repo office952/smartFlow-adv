@@ -195,6 +195,8 @@ export function WorkspacePreviewPage() {
             <>
               <strong>{preview.status}</strong>
               {preview.existing_quote_code ? <p>Existing quote: {preview.existing_quote_code}</p> : null}
+              {preview.template_code ? <p>Systems template: {preview.template_code}</p> : null}
+              {preview.provenance ? <p>Provenance: {preview.provenance}</p> : null}
               <p>Subtotal net: {preview.subtotal_net ?? "blocked"}</p>
               <p>VAT ({Math.round(preview.vat_rate * 100)}%): {preview.vat_amount ?? "blocked"}</p>
               <p>Total gross: {preview.total_gross ?? "blocked"}</p>
@@ -261,23 +263,7 @@ export function WorkspacePreviewPage() {
                         </select>
                       </td>
                       <td>
-                        {decision.code === "DEBITARE_SPATE_BASIS_ML_VS_M2" ? (
-                          <select
-                            value={decision.selected_value ?? ""}
-                            onChange={(event) => {
-                              void handleDecisionChange(decision, {
-                                selected_value: event.target.value || null,
-                              });
-                            }}
-                            disabled={savingDecisionCode === decision.code}
-                          >
-                            <option value="">unset</option>
-                            <option value="m2">m2</option>
-                            <option value="ml">ml</option>
-                          </select>
-                        ) : (
-                          decision.selected_value ?? "-"
-                        )}
+                        {decision.selected_value ?? "-"}
                       </td>
                       <td>
                         <input
@@ -327,7 +313,9 @@ export function WorkspacePreviewPage() {
             <table className="table">
               <thead>
                 <tr>
+                  <th>Rule</th>
                   <th>Line</th>
+                  <th>Status</th>
                   <th>Basis</th>
                   <th>Quantity</th>
                   <th>Unit price</th>
@@ -337,10 +325,12 @@ export function WorkspacePreviewPage() {
               <tbody>
                 {preview.lines.map((line) => (
                   <tr key={line.code}>
+                    <td>{line.rule_code ?? line.code}</td>
                     <td>
                       {line.label}
                       {line.owner_decision_required ? <div><span className="badge">Owner decision</span></div> : null}
                     </td>
+                    <td>{line.line_status ?? "blocked"}</td>
                     <td>{line.basis_type}</td>
                     <td>{line.quantity ?? "-"} {line.unit}</td>
                     <td>

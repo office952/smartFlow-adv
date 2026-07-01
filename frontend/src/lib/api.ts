@@ -50,6 +50,11 @@ export type QuoteLine = {
   commercial_unit_price: number | null;
   subtotal: number | null;
   owner_decision_required: boolean;
+  rule_code?: string | null;
+  component_code?: string | null;
+  line_status?: "blocked" | "priced" | "included" | "manual_review" | "not_applicable";
+  blockers?: QuoteBlocker[];
+  source?: string;
 };
 
 export type QuoteLinePrice = {
@@ -95,6 +100,7 @@ export type QuotePreview = {
   workspace_id: string;
   workspace_title: string;
   client_name: string;
+  template_code?: string | null;
   status: string;
   existing_quote_id: string | null;
   existing_quote_code: string | null;
@@ -107,6 +113,7 @@ export type QuotePreview = {
   blockers: QuoteBlocker[];
   owner_decisions: QuoteOwnerDecision[];
   warnings: string[];
+  provenance?: string;
 };
 
 export type CommercialQuote = {
