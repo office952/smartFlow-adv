@@ -151,6 +151,23 @@ This roadmap replaces the starter's implicit path (hardcoded form → hardcoded 
 
 ---
 
+## Phase 3C — Preview blocker routing polish
+
+**Status:** Partial (2026-07-01) — frontend UX only
+
+**Goal:** Map preview blockers to intake review sections and operator actions.
+
+| Deliverable | Status |
+|-------------|--------|
+| Frontend blocker routing (`blockerRouting.ts`) | Done — parses `code` + `message` |
+| Secțiune / Acțiune UI on preview | Done |
+| Anchor links (`#review-*`, `#price-{rule_code}`) | Done |
+| Backend structured `QuoteBlocker` metadata | **Pending** |
+
+**Next:** Phase 3C backend structured blockers, then Phase 3D preview ready-flow QA.
+
+---
+
 ## Phase 4 — Official priced quote
 
 **Status:** Not started — blocked until payload + artwork/review stable enough.

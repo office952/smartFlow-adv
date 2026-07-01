@@ -279,6 +279,7 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
       ) : (
         <>
           <Section title="Artwork / SVG">
+            <div id="review-artwork">
             <ArtworkUploadPanel
               state={artwork}
               onChange={setArtwork}
@@ -287,6 +288,7 @@ export function SystemDrivenIntakeForm({ onSubmit, submitting = false, submitErr
               returnFinishOptions={finishOptions.returnFinishOptions}
               defaultReturnDepthMm={defaultReturnDepthMm}
             />
+            </div>
           </Section>
 
           <Section title="Intake review (Finisaje / Iluminare / Montaj)">

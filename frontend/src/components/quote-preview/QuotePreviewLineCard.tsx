@@ -1,4 +1,5 @@
 import type { QuoteLine } from "../../lib/api";
+import { BlockerRouteHint } from "./BlockerRouteHint";
 import { OwnerRulePriceEditor } from "./OwnerRulePriceEditor";
 import { LineStatusBadge } from "./PreviewStatusBadge";
 
@@ -60,18 +61,20 @@ export function QuotePreviewLineCard({ line, currency, savingRuleCode, onSavePri
         <ul className="quote-line-card__blockers">
           {(line.blockers ?? []).map((blocker) => (
             <li key={`${blocker.code}-${blocker.message}`}>
-              <strong>{blocker.code}</strong> — {blocker.message}
+              <BlockerRouteHint blocker={blocker} />
             </li>
           ))}
         </ul>
       ) : null}
 
-      <OwnerRulePriceEditor
+      <div id={`price-editor-${ruleCode}`}>
+        <OwnerRulePriceEditor
         line={line}
         currency={currency}
         saving={savingRuleCode === ruleCode}
         onSave={onSavePrice}
       />
+      </div>
     </article>
   );
 }

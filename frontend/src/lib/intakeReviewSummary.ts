@@ -21,8 +21,8 @@ export function buildReviewCompletionSummary(
   }
   if (groupsMissingMetrics > 0) {
     gaps.push({
-      section: "Finisaje",
-      message: `${groupsMissingMetrics} confirmed group(s) missing face area or perimeter.`,
+      section: "Finisaje / Letter Groups",
+      message: "Completează aria pe grupurile confirmate — poate bloca REQUIRED_INPUT_MISSING: face_area_m2.",
     });
   }
 
@@ -49,10 +49,13 @@ export function buildReviewCompletionSummary(
 
   let backingComplete = Boolean(review.backing.backing_mode);
   if (!backingComplete) {
-    gaps.push({ section: "Spate", message: "Backing mode not selected." });
+    gaps.push({ section: "Spate", message: "Completează Mod spate / backing." });
   }
   if (review.backing.back_area_m2 == null) {
-    gaps.push({ section: "Spate", message: "Back area (m²) not entered — may block back panel rule." });
+    gaps.push({ section: "Spate", message: "Completează Suprafața spate (m²) — poate bloca back_panel_rule." });
+  }
+  if (!review.backing.back_material) {
+    gaps.push({ section: "Spate", message: "Completează Material spate — poate bloca OWNER_DECISION_MISSING: back_material." });
   }
 
   let mountingComplete = Boolean(review.mounting.mounting_system);

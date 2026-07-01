@@ -675,6 +675,46 @@ body {
   background: var(--sf-surface);
 }
 
+.blocker-route-hint__backend-note {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--sf-text-muted);
+}
+
+.blocker-route-hint__headline {
+  margin: 0 0 4px;
+}
+
+.blocker-route-hint__message {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: var(--sf-text-muted);
+}
+
+.blocker-route-hint__route {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.blocker-route-hint__route dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sf-text-muted);
+}
+
+.blocker-route-hint__route dd {
+  margin: 2px 0 0;
+  font-weight: 500;
+}
+
+.blocker-route-hint__link {
+  color: var(--sf-accent, #2563eb);
+  text-decoration: underline;
+}
+
 .quote-blocker-item__code {
   display: block;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;

@@ -239,7 +239,7 @@ export function WorkspacePreviewPage() {
             title="Commercial rules by component"
             description="Grouped from backend preview lines — one card per commercial rule."
           >
-            <div className="quote-line-groups">
+            <div className="quote-line-groups" id="owner-prices">
               {lineGroups.map((group) => (
                 <QuotePreviewLineGroup
                   key={group.componentCode}
